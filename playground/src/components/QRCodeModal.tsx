@@ -110,6 +110,15 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
 
   if (!isOpen) return null;
 
+  // Animation styles
+  const backdropStyle = {
+    animation: 'fadeIn 0.2s ease-out',
+  };
+
+  const modalStyle = {
+    animation: 'slideUp 0.3s ease-out',
+  };
+
   const inputStyle = {
     width: '100%',
     padding: '10px 12px',
@@ -144,37 +153,56 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
   });
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.8)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 9999,
-        padding: 16,
-      }}
-      onClick={handleClose}
-    >
+    <>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+      `}</style>
       <div
         style={{
-          background: tokens.bgCard,
-          border: `2px solid ${tokens.primary}`,
-          borderRadius: 16,
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          maxWidth: 900,
-          width: '100%',
-          maxHeight: '95vh',
-          overflow: 'hidden',
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.8)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
           display: 'flex',
-          flexDirection: 'column',
-        }}
-        onClick={(e) => e.stopPropagation()}
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: 16,
+          ...backdropStyle,
+        } as any}
+        onClick={handleClose}
       >
+        <div
+          style={{
+            background: tokens.bgCard,
+            border: `2px solid ${tokens.primary}`,
+            borderRadius: 16,
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            maxWidth: 1000,
+            width: '100%',
+            maxHeight: '95vh',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            ...modalStyle,
+          } as any}
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div
           style={{
@@ -233,32 +261,38 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
         </div>
 
         {/* Content: Two column layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 0, flex: 1, minHeight: 0, overflow: 'hidden' }}>
           {/* Left: Preview & Code */}
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: 16,
-              padding: 24,
+              gap: 14,
+              padding: 20,
               background: 'rgba(255,255,255,0.02)',
               borderRight: `1px solid ${tokens.border}`,
               overflow: 'auto',
+              alignItems: 'center',
             }}
           >
-            {/* QR Preview */}
+            {/* QR Preview - Responsive */}
             <div
               style={{
                 background: '#ffffff',
-                padding: 20,
+                padding: 16,
                 borderRadius: 12,
                 display: 'grid',
                 placeItems: 'center',
-                minHeight: 280,
                 border: `2px solid ${tokens.border}`,
+                width: '100%',
+                maxWidth: `${Math.min(size + 40, 400)}px`,
+                aspectRatio: '1',
+                overflow: 'auto',
               }}
             >
-              <QRCode ref={ref} {...qrProps} />
+              <div style={{ maxWidth: `${size}px`, maxHeight: `${size}px`, width: '100%', aspectRatio: '1' }}>
+                <QRCode ref={ref} {...qrProps} style={{ width: '100%', height: '100%' }} />
+              </div>
             </div>
 
             {/* Download & Copy Buttons */}
@@ -512,7 +546,8 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
