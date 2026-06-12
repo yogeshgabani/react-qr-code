@@ -1,0 +1,69 @@
+{
+  "name": "react-qr-master",
+  "version": "0.1.0",
+  "description": "The ultimate all-in-one QR Code ecosystem for React — generator, scanner, studio, analytics, dynamic, batch, and 100+ templates.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "react",
+    "qr",
+    "qrcode",
+    "qr-code",
+    "qr-generator",
+    "qr-scanner",
+    "qr-studio",
+    "wifi-qr",
+    "email-qr",
+    "react-component",
+    "qr-svg",
+    "qr-png",
+    "qr-pdf",
+    "react-qr-master"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=17",
+    "react-dom": ">=17"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "jspdf": "^2.5.2",
+    "qrcode-generator": "^1.4.4"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "rimraf": "^5.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
