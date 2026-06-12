@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { QRCode, useQRDownload, type QRCodeProps } from 'react-qr-master';
 import { tokens } from '../styles';
 import { CopyButton } from './CopyButton';
@@ -10,8 +10,6 @@ export interface QRCodeModalProps {
   title?: string;
 }
 
-type EditableKeys = 'value' | 'size' | 'level' | 'fgColor' | 'bgColor' | 'shape' | 'cornerStyle' | 'eyeShape';
-
 const PRESETS = {
   shapes: ['square', 'rounded', 'extra-rounded', 'circle', 'dot', 'diamond', 'hexagon', 'star'] as const,
   corners: ['square', 'rounded', 'soft-rounded', 'circle', 'modern'] as const,
@@ -19,18 +17,39 @@ const PRESETS = {
   levels: ['L', 'M', 'Q', 'H'] as const,
 };
 
+const DEFAULTS = {
+  value: 'https://example.com',
+  size: 300,
+  level: 'M',
+  fgColor: '#000000',
+  bgColor: '#ffffff',
+  shape: 'square',
+  cornerStyle: 'square',
+  eyeShape: 'square',
+};
+
 export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Code Designer' }: QRCodeModalProps) {
   const { ref, download } = useQRDownload();
   const codeRef = useRef<HTMLDivElement>(null);
 
-  const [value, setValue] = useState(initialProps.value || 'https://example.com');
-  const [size, setSize] = useState(initialProps.size || 300);
-  const [level, setLevel] = useState(initialProps.level || 'M');
-  const [fgColor, setFgColor] = useState(initialProps.fgColor || '#000000');
-  const [bgColor, setBgColor] = useState(initialProps.bgColor || '#ffffff');
-  const [shape, setShape] = useState(initialProps.shape || 'square');
-  const [cornerStyle, setCornerStyle] = useState(initialProps.cornerStyle || 'square');
-  const [eyeShape, setEyeShape] = useState(initialProps.eyeShape || 'square');
+  // Initialize with provided values or defaults
+  const initialValue = initialProps.value || DEFAULTS.value;
+  const initialSize = initialProps.size || DEFAULTS.size;
+  const initialLevel = initialProps.level || DEFAULTS.level;
+  const initialFgColor = initialProps.fgColor || DEFAULTS.fgColor;
+  const initialBgColor = initialProps.bgColor || DEFAULTS.bgColor;
+  const initialShape = initialProps.shape || DEFAULTS.shape;
+  const initialCornerStyle = initialProps.cornerStyle || DEFAULTS.cornerStyle;
+  const initialEyeShape = initialProps.eyeShape || DEFAULTS.eyeShape;
+
+  const [value, setValue] = useState(initialValue);
+  const [size, setSize] = useState(initialSize);
+  const [level, setLevel] = useState(initialLevel);
+  const [fgColor, setFgColor] = useState(initialFgColor);
+  const [bgColor, setBgColor] = useState(initialBgColor);
+  const [shape, setShape] = useState(initialShape);
+  const [cornerStyle, setCornerStyle] = useState(initialCornerStyle);
+  const [eyeShape, setEyeShape] = useState(initialEyeShape);
 
   const qrProps: QRCodeProps = {
     value,
@@ -58,8 +77,24 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
     return `import { QRCode } from 'react-qr-master';\n\nexport function MyQRCode() {\n  return (\n    <QRCode${propsStr}/>\n  );\n}`;
   };
 
+  const handleReset = () => {
+    setValue(initialValue);
+    setSize(initialSize);
+    setLevel(initialLevel);
+    setFgColor(initialFgColor);
+    setBgColor(initialBgColor);
+    setShape(initialShape);
+    setCornerStyle(initialCornerStyle);
+    setEyeShape(initialEyeShape);
+  };
+
+  const handleClose = () => {
+    handleReset();
+    onClose();
+  };
+
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') onClose();
+    if (e.key === 'Escape') handleClose();
   };
 
   useEffect(() => {
@@ -77,38 +112,27 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
 
   const inputStyle = {
     width: '100%',
-    padding: '8px 12px',
-    background: 'rgba(0,0,0,0.3)',
+    padding: '10px 12px',
+    background: 'rgba(0,0,0,0.4)',
     border: `1px solid ${tokens.border}`,
     borderRadius: 8,
     color: tokens.text,
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: "'JetBrains Mono', monospace",
   };
 
   const labelStyle = {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 700,
     color: tokens.textMuted,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.4,
-    marginBottom: 6,
-  };
-
-  const sectionStyle = {
-    paddingBottom: 16,
-    borderBottom: `1px solid ${tokens.border}`,
-    marginBottom: 16,
-  };
-
-  const gridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: 12,
+    letterSpacing: 0.5,
+    marginBottom: 8,
+    display: 'block',
   };
 
   const chipStyle = (active: boolean) => ({
-    padding: '6px 12px',
+    padding: '8px 12px',
     background: active ? tokens.primary : tokens.bgCard,
     border: `1px solid ${active ? tokens.primary : tokens.border}`,
     borderRadius: 8,
@@ -124,305 +148,367 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0,0,0,0.7)',
-        backdropFilter: 'blur(4px)',
-        WebkitBackdropFilter: 'blur(4px)',
+        background: 'rgba(0,0,0,0.8)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999,
-        padding: 20,
+        padding: 16,
       }}
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div
         style={{
           background: tokens.bgCard,
-          border: `1px solid ${tokens.border}`,
+          border: `2px solid ${tokens.primary}`,
           borderRadius: 16,
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
-          maxWidth: 1000,
+          maxWidth: 900,
           width: '100%',
-          maxHeight: '90vh',
-          overflow: 'auto',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 0,
+          maxHeight: '95vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Left: Preview & Code */}
+        {/* Header */}
         <div
           style={{
-            padding: 32,
-            background: 'rgba(255,255,255,0.02)',
-            borderRight: `1px solid ${tokens.border}`,
             display: 'flex',
-            flexDirection: 'column',
-            gap: 24,
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '20px 24px',
+            borderBottom: `1px solid ${tokens.border}`,
+            background: 'rgba(0,0,0,0.2)',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: tokens.text }}>
-              Preview
-            </h2>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: tokens.text }}>
+            {title}
+          </h2>
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
-              onClick={onClose}
+              onClick={handleReset}
+              style={{
+                background: 'transparent',
+                border: `1px solid ${tokens.border}`,
+                color: tokens.textMuted,
+                padding: '8px 14px',
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              title="Reset all values to original"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                e.currentTarget.style.borderColor = tokens.borderBright;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.borderColor = tokens.border;
+              }}
+            >
+              ↻ Reset
+            </button>
+            <button
+              onClick={handleClose}
               style={{
                 background: 'transparent',
                 border: 'none',
                 color: tokens.textMuted,
                 fontSize: 24,
                 cursor: 'pointer',
-                padding: 4,
+                padding: '0px 8px',
               }}
+              title="Close (Esc)"
             >
               ✕
             </button>
           </div>
-
-          {/* QR Preview */}
-          <div
-            style={{
-              background: '#ffffff',
-              padding: 24,
-              borderRadius: 12,
-              display: 'grid',
-              placeItems: 'center',
-              aspectRatio: '1',
-              border: `1px solid ${tokens.border}`,
-            }}
-          >
-            <QRCode ref={ref} {...qrProps} />
-          </div>
-
-          {/* Download Buttons */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <button
-              onClick={() => download('png', { pixelSize: 1024 })}
-              style={{
-                padding: '10px 14px',
-                background: tokens.primary,
-                color: '#000',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                fontSize: 12,
-                fontWeight: 600,
-              }}
-            >
-              📥 PNG
-            </button>
-            <button
-              onClick={() => download('svg')}
-              style={{
-                padding: '10px 14px',
-                background: tokens.primary,
-                color: '#000',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                fontSize: 12,
-                fontWeight: 600,
-              }}
-            >
-              📥 SVG
-            </button>
-          </div>
-
-          {/* Code Section */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <h3 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: tokens.text }}>React Code</h3>
-              <CopyButton text={generateCode()} label="Copy" variant="outline" size="sm" />
-            </div>
-            <pre
-              ref={codeRef}
-              style={{
-                background: 'rgba(0,0,0,0.4)',
-                border: `1px solid ${tokens.border}`,
-                borderRadius: 8,
-                padding: 12,
-                fontSize: 10,
-                lineHeight: 1.5,
-                color: tokens.text,
-                fontFamily: "'JetBrains Mono', monospace",
-                margin: 0,
-                overflow: 'auto',
-                maxHeight: 200,
-              }}
-            >
-              <code>{generateCode()}</code>
-            </pre>
-          </div>
         </div>
 
-        {/* Right: Controls */}
-        <div
-          style={{
-            padding: 32,
-            overflow: 'auto',
-          }}
-        >
-          <h2 style={{ margin: '0 0 24px 0', fontSize: 18, fontWeight: 800, color: tokens.text }}>
-            Customize
-          </h2>
-
-          {/* QR Value */}
-          <div style={sectionStyle}>
-            <label style={labelStyle}>QR Value / Data</label>
-            <input
-              type="text"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="https://example.com"
-              style={inputStyle as any}
-            />
-            <p style={{ fontSize: 10, color: tokens.textSubtle, margin: '6px 0 0' }}>
-              URL, text, WiFi SSID, email, phone, etc.
-            </p>
-          </div>
-
-          {/* Size */}
-          <div style={sectionStyle}>
-            <label style={labelStyle}>Size: {size}px</label>
-            <input
-              type="range"
-              min={120}
-              max={600}
-              step={20}
-              value={size}
-              onChange={(e) => setSize(Number(e.target.value))}
-              style={{ width: '100%', cursor: 'pointer' }}
-            />
-          </div>
-
-          {/* Error Correction */}
-          <div style={sectionStyle}>
-            <label style={labelStyle}>Error Correction</label>
-            <div style={gridStyle}>
-              {PRESETS.levels.map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setLevel(l)}
-                  style={chipStyle(level === l)}
-                  onMouseEnter={(e) => {
-                    if (level !== l) e.currentTarget.style.borderColor = tokens.borderBright;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = level === l ? tokens.primary : tokens.border;
-                  }}
-                >
-                  {l}
-                </button>
-              ))}
+        {/* Content: Two column layout */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          {/* Left: Preview & Code */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16,
+              padding: 24,
+              background: 'rgba(255,255,255,0.02)',
+              borderRight: `1px solid ${tokens.border}`,
+              overflow: 'auto',
+            }}
+          >
+            {/* QR Preview */}
+            <div
+              style={{
+                background: '#ffffff',
+                padding: 20,
+                borderRadius: 12,
+                display: 'grid',
+                placeItems: 'center',
+                minHeight: 280,
+                border: `2px solid ${tokens.border}`,
+              }}
+            >
+              <QRCode ref={ref} {...qrProps} />
             </div>
-            <p style={{ fontSize: 10, color: tokens.textSubtle, margin: '6px 0 0' }}>
-              L=7% M=15% Q=25% H=30% recovery
-            </p>
+
+            {/* Download & Copy Buttons */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <button
+                onClick={() => download('png', { pixelSize: 1024 })}
+                style={{
+                  padding: '12px 14px',
+                  background: tokens.primary,
+                  color: '#000',
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '0.9';
+                  e.currentTarget.style.transform = 'scale(0.98)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                📥 PNG
+              </button>
+              <button
+                onClick={() => download('svg')}
+                style={{
+                  padding: '12px 14px',
+                  background: tokens.primary,
+                  color: '#000',
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '0.9';
+                  e.currentTarget.style.transform = 'scale(0.98)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                📥 SVG
+              </button>
+            </div>
+
+            {/* Code Section */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <label style={labelStyle as any}>React Code</label>
+                <CopyButton text={generateCode()} label="Copy" variant="outline" size="sm" />
+              </div>
+              <pre
+                ref={codeRef}
+                style={{
+                  background: 'rgba(0,0,0,0.5)',
+                  border: `1px solid ${tokens.border}`,
+                  borderRadius: 8,
+                  padding: 12,
+                  fontSize: 10,
+                  lineHeight: 1.4,
+                  color: tokens.text,
+                  fontFamily: "'JetBrains Mono', monospace",
+                  margin: 0,
+                  overflow: 'auto',
+                  maxHeight: 150,
+                }}
+              >
+                <code>{generateCode()}</code>
+              </pre>
+            </div>
           </div>
 
-          {/* Colors */}
-          <div style={sectionStyle}>
-            <label style={labelStyle}>Foreground Color</label>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                type="color"
-                value={fgColor}
-                onChange={(e) => setFgColor(e.target.value)}
-                style={{ width: 50, height: 40, borderRadius: 8, border: 'none', cursor: 'pointer' }}
-              />
+          {/* Right: Controls (Scrollable) */}
+          <div
+            style={{
+              padding: 24,
+              overflow: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 18,
+            }}
+          >
+            {/* QR Value */}
+            <div>
+              <label style={labelStyle}>QR Data</label>
               <input
                 type="text"
-                value={fgColor}
-                onChange={(e) => setFgColor(e.target.value)}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder="https://example.com"
                 style={inputStyle as any}
               />
+              <p style={{ fontSize: 10, color: tokens.textSubtle, margin: '6px 0 0' }}>
+                URL, text, WiFi, email, phone, etc.
+              </p>
             </div>
-          </div>
 
-          <div style={sectionStyle}>
-            <label style={labelStyle}>Background Color</label>
-            <div style={{ display: 'flex', gap: 8 }}>
+            {/* Size */}
+            <div>
+              <label style={labelStyle}>Size: {size}px</label>
               <input
-                type="color"
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
-                style={{ width: 50, height: 40, borderRadius: 8, border: 'none', cursor: 'pointer' }}
-              />
-              <input
-                type="text"
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
-                style={inputStyle as any}
+                type="range"
+                min={120}
+                max={600}
+                step={20}
+                value={size}
+                onChange={(e) => setSize(Number(e.target.value))}
+                style={{ width: '100%', cursor: 'pointer', height: 6 }}
               />
             </div>
-          </div>
 
-          {/* Module Shape */}
-          <div style={sectionStyle}>
-            <label style={labelStyle}>Module Shape</label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-              {PRESETS.shapes.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setShape(s)}
-                  style={chipStyle(shape === s)}
-                  onMouseEnter={(e) => {
-                    if (shape !== s) e.currentTarget.style.borderColor = tokens.borderBright;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = shape === s ? tokens.primary : tokens.border;
-                  }}
-                >
-                  {s}
-                </button>
-              ))}
+            {/* Error Correction */}
+            <div>
+              <label style={labelStyle}>Error Correction</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                {PRESETS.levels.map((l) => (
+                  <button
+                    key={l}
+                    onClick={() => setLevel(l as any)}
+                    style={chipStyle(level === l)}
+                    onMouseEnter={(e) => {
+                      if (level !== l) e.currentTarget.style.borderColor = tokens.borderBright;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = level === l ? tokens.primary : tokens.border;
+                    }}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+              <p style={{ fontSize: 9, color: tokens.textSubtle, margin: '6px 0 0' }}>
+                L=7% M=15% Q=25% H=30%
+              </p>
             </div>
-          </div>
 
-          {/* Corner Style */}
-          <div style={sectionStyle}>
-            <label style={labelStyle}>Corner Style</label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-              {PRESETS.corners.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setCornerStyle(c)}
-                  style={chipStyle(cornerStyle === c)}
-                  onMouseEnter={(e) => {
-                    if (cornerStyle !== c) e.currentTarget.style.borderColor = tokens.borderBright;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = cornerStyle === c ? tokens.primary : tokens.border;
-                  }}
-                >
-                  {c}
-                </button>
-              ))}
+            {/* Colors */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div>
+                <label style={labelStyle}>Foreground</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    type="color"
+                    value={fgColor}
+                    onChange={(e) => setFgColor(e.target.value)}
+                    style={{ width: 44, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer' }}
+                  />
+                  <input
+                    type="text"
+                    value={fgColor}
+                    onChange={(e) => setFgColor(e.target.value)}
+                    style={{ ...inputStyle, flex: 1, fontSize: 11 } as any}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={labelStyle}>Background</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    type="color"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    style={{ width: 44, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer' }}
+                  />
+                  <input
+                    type="text"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    style={{ ...inputStyle, flex: 1, fontSize: 11 } as any}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Eye Shape */}
-          <div>
-            <label style={labelStyle}>Eye Shape</label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-              {PRESETS.eyes.map((e) => (
-                <button
-                  key={e}
-                  onClick={() => setEyeShape(e)}
-                  style={chipStyle(eyeShape === e)}
-                  onMouseEnter={(el) => {
-                    if (eyeShape !== e) el.currentTarget.style.borderColor = tokens.borderBright;
-                  }}
-                  onMouseLeave={(el) => {
-                    el.currentTarget.style.borderColor = eyeShape === e ? tokens.primary : tokens.border;
-                  }}
-                >
-                  {e}
-                </button>
-              ))}
+            {/* Module Shape */}
+            <div>
+              <label style={labelStyle}>Module Shape</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                {PRESETS.shapes.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setShape(s as any)}
+                    style={chipStyle(shape === s)}
+                    onMouseEnter={(e) => {
+                      if (shape !== s) e.currentTarget.style.borderColor = tokens.borderBright;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = shape === s ? tokens.primary : tokens.border;
+                    }}
+                    title={s}
+                  >
+                    {s.slice(0, 4)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Corner Style */}
+            <div>
+              <label style={labelStyle}>Corner Style</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+                {PRESETS.corners.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCornerStyle(c as any)}
+                    style={chipStyle(cornerStyle === c)}
+                    onMouseEnter={(e) => {
+                      if (cornerStyle !== c) e.currentTarget.style.borderColor = tokens.borderBright;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = cornerStyle === c ? tokens.primary : tokens.border;
+                    }}
+                    title={c}
+                  >
+                    {c.slice(0, 5)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Eye Shape */}
+            <div>
+              <label style={labelStyle}>Eye Shape</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+                {PRESETS.eyes.map((e) => (
+                  <button
+                    key={e}
+                    onClick={() => setEyeShape(e as any)}
+                    style={chipStyle(eyeShape === e)}
+                    onMouseEnter={(el) => {
+                      if (eyeShape !== e) el.currentTarget.style.borderColor = tokens.borderBright;
+                    }}
+                    onMouseLeave={(el) => {
+                      el.currentTarget.style.borderColor = eyeShape === e ? tokens.primary : tokens.border;
+                    }}
+                    title={e}
+                  >
+                    {e.slice(0, 5)}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
