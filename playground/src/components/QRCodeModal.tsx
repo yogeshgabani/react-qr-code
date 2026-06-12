@@ -518,7 +518,7 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             {/* Module Shape */}
             <div>
               <label style={labelStyle}>Module Shape</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                 {PRESETS.shapes.map((s) => (
                   <button
                     key={s}
@@ -547,7 +547,7 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             {/* Corner Style */}
             <div>
               <label style={labelStyle}>Corner Style</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                 {PRESETS.corners.map((c) => (
                   <button
                     key={c}
@@ -576,7 +576,7 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             {/* Eye Shape */}
             <div>
               <label style={labelStyle}>Eye Shape</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                 {PRESETS.eyes.map((e) => (
                   <button
                     key={e}
