@@ -223,3 +223,29 @@ export function App() {
     </>
   );
 }`}
+          </pre>
+          <div style={{ position: 'absolute', top: 8, right: 8 }}>
+            <CopyButton
+              text={`import { QRCode, useQRDownload } from 'react-qr-master';\n\nexport function App() {\n  const { ref, download } = useQRDownload();\n\n  return (\n    <>\n      <QRCode ref={ref} value="https://example.com" size={256} />\n      <button onClick={() => download('png', { pixelSize: 1024 })}>\n        Download PNG\n      </button>\n    </>\n  );\n}`}
+              label="Copy"
+              variant="outline"
+              size="sm"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Resources */}
+      <div>
+        <h3 style={heading}>🔗 Resources</h3>
+        <div style={{ background: 'rgba(0,0,0,0.2)', border: `1px solid ${tokens.border}`, borderRadius: 8, padding: 14 }}>
+          <div style={bullet}><strong>GitHub:</strong> github.com/anthropics/react-qr-master</div>
+          <div style={bullet}><strong>NPM:</strong> npm install react-qr-master</div>
+          <div style={bullet}><strong>Playground:</strong> All tabs showcase features with live examples</div>
+          <div style={bullet}><strong>Click any QR:</strong> Opens interactive editor with live changes</div>
+          <div style={bullet}><strong>Copy code:</strong> Available on all code snippets</div>
+        </div>
+      </div>
+    </div>
+  );
+}

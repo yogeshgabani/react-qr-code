@@ -3,7 +3,8 @@
     "allow": [
       "Bash(pkill -f \"tsup.*watch\")",
       "Bash(pkill -f \"vite\\\\|npm run\")",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git commit -m 'Fix GettingStarted.tsx syntax error - complete the component *)"
     ]
   }
 }
