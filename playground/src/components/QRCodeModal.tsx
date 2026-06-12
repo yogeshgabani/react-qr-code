@@ -140,17 +140,46 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
     display: 'block',
   };
 
-  const chipStyle = (active: boolean) => ({
-    padding: '8px 12px',
-    background: active ? tokens.primary : tokens.bgCard,
-    border: `1px solid ${active ? tokens.primary : tokens.border}`,
-    borderRadius: 8,
-    color: active ? '#000' : tokens.text,
-    fontSize: 11,
-    fontWeight: 600 as const,
+  const chipStyle = (active: boolean, color?: string) => ({
+    padding: '10px 12px',
+    background: active ? (color || tokens.primary) : tokens.bgCard,
+    border: `2px solid ${active ? (color || tokens.primary) : tokens.border}`,
+    borderRadius: 10,
+    color: active ? '#fff' : tokens.textMuted,
+    fontSize: 12,
+    fontWeight: 700 as const,
     cursor: 'pointer' as const,
     transition: 'all 0.2s ease',
+    boxShadow: active ? `0 0 12px ${(color || tokens.primary)}40` : 'none',
   });
+
+  // Color schemes for different button types
+  const shapeColors: Record<string, string> = {
+    square: '#8B5CF6',
+    rounded: '#EC4899',
+    'extra-rounded': '#F59E0B',
+    circle: '#10B981',
+    dot: '#06B6D4',
+    diamond: '#EF4444',
+    hexagon: '#6366F1',
+    star: '#F97316',
+  };
+
+  const cornerColors: Record<string, string> = {
+    square: '#3B82F6',
+    rounded: '#8B5CF6',
+    'soft-rounded': '#D946EF',
+    circle: '#EC4899',
+    modern: '#F59E0B',
+  };
+
+  const eyeColors: Record<string, string> = {
+    square: '#06B6D4',
+    rounded: '#14B8A6',
+    circle: '#10B981',
+    diamond: '#84CC16',
+    modern: '#FBBF24',
+  };
 
   return (
     <>
@@ -416,25 +445,35 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             {/* Error Correction */}
             <div>
               <label style={labelStyle}>Error Correction</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-                {PRESETS.levels.map((l) => (
-                  <button
-                    key={l}
-                    onClick={() => setLevel(l as any)}
-                    style={chipStyle(level === l)}
-                    onMouseEnter={(e) => {
-                      if (level !== l) e.currentTarget.style.borderColor = tokens.borderBright;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = level === l ? tokens.primary : tokens.border;
-                    }}
-                  >
-                    {l}
-                  </button>
-                ))}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                {PRESETS.levels.map((l, idx) => {
+                  const levelColors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6'];
+                  return (
+                    <button
+                      key={l}
+                      onClick={() => setLevel(l as any)}
+                      style={chipStyle(level === l, levelColors[idx]) as any}
+                      onMouseEnter={(e) => {
+                        if (level !== l) {
+                          e.currentTarget.style.borderColor = levelColors[idx];
+                          e.currentTarget.style.background = `${levelColors[idx]}20`;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (level !== l) {
+                          e.currentTarget.style.borderColor = tokens.border;
+                          e.currentTarget.style.background = tokens.bgCard;
+                        }
+                      }}
+                      title={`Level ${l}: ${['7%', '15%', '25%', '30%'][idx]} recovery`}
+                    >
+                      <strong>{l}</strong>
+                    </button>
+                  );
+                })}
               </div>
-              <p style={{ fontSize: 9, color: tokens.textSubtle, margin: '6px 0 0' }}>
-                L=7% M=15% Q=25% H=30%
+              <p style={{ fontSize: 9, color: tokens.textSubtle, margin: '8px 0 0' }}>
+                L=7% | M=15% | Q=25% | H=30% recovery
               </p>
             </div>
 
@@ -479,21 +518,27 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             {/* Module Shape */}
             <div>
               <label style={labelStyle}>Module Shape</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                 {PRESETS.shapes.map((s) => (
                   <button
                     key={s}
                     onClick={() => setShape(s as any)}
-                    style={chipStyle(shape === s)}
+                    style={chipStyle(shape === s, shapeColors[s]) as any}
                     onMouseEnter={(e) => {
-                      if (shape !== s) e.currentTarget.style.borderColor = tokens.borderBright;
+                      if (shape !== s) {
+                        e.currentTarget.style.borderColor = shapeColors[s];
+                        e.currentTarget.style.background = `${shapeColors[s]}20`;
+                      }
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = shape === s ? tokens.primary : tokens.border;
+                      if (shape !== s) {
+                        e.currentTarget.style.borderColor = tokens.border;
+                        e.currentTarget.style.background = tokens.bgCard;
+                      }
                     }}
                     title={s}
                   >
-                    {s.slice(0, 4)}
+                    {s}
                   </button>
                 ))}
               </div>
@@ -502,21 +547,27 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             {/* Corner Style */}
             <div>
               <label style={labelStyle}>Corner Style</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                 {PRESETS.corners.map((c) => (
                   <button
                     key={c}
                     onClick={() => setCornerStyle(c as any)}
-                    style={chipStyle(cornerStyle === c)}
+                    style={chipStyle(cornerStyle === c, cornerColors[c]) as any}
                     onMouseEnter={(e) => {
-                      if (cornerStyle !== c) e.currentTarget.style.borderColor = tokens.borderBright;
+                      if (cornerStyle !== c) {
+                        e.currentTarget.style.borderColor = cornerColors[c];
+                        e.currentTarget.style.background = `${cornerColors[c]}20`;
+                      }
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = cornerStyle === c ? tokens.primary : tokens.border;
+                      if (cornerStyle !== c) {
+                        e.currentTarget.style.borderColor = tokens.border;
+                        e.currentTarget.style.background = tokens.bgCard;
+                      }
                     }}
                     title={c}
                   >
-                    {c.slice(0, 5)}
+                    {c}
                   </button>
                 ))}
               </div>
@@ -525,21 +576,27 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             {/* Eye Shape */}
             <div>
               <label style={labelStyle}>Eye Shape</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                 {PRESETS.eyes.map((e) => (
                   <button
                     key={e}
                     onClick={() => setEyeShape(e as any)}
-                    style={chipStyle(eyeShape === e)}
+                    style={chipStyle(eyeShape === e, eyeColors[e]) as any}
                     onMouseEnter={(el) => {
-                      if (eyeShape !== e) el.currentTarget.style.borderColor = tokens.borderBright;
+                      if (eyeShape !== e) {
+                        el.currentTarget.style.borderColor = eyeColors[e];
+                        el.currentTarget.style.background = `${eyeColors[e]}20`;
+                      }
                     }}
                     onMouseLeave={(el) => {
-                      el.currentTarget.style.borderColor = eyeShape === e ? tokens.primary : tokens.border;
+                      if (eyeShape !== e) {
+                        el.currentTarget.style.borderColor = tokens.border;
+                        el.currentTarget.style.background = tokens.bgCard;
+                      }
                     }}
                     title={e}
                   >
-                    {e.slice(0, 5)}
+                    {e}
                   </button>
                 ))}
               </div>
