@@ -14,7 +14,7 @@ const SOCIAL_LINKS: SocialLink[] = [
   {
     key: "whatsapp",
     label: "WhatsApp",
-    href: process.env.REACT_APP_SOCIAL_WHATSAPP || "",
+    href: import.meta.env.VITE_SOCIAL_WHATSAPP || "",
     brand: "#25D366",
     icon: (
       <svg
@@ -31,7 +31,7 @@ const SOCIAL_LINKS: SocialLink[] = [
   {
     key: "instagram",
     label: "Instagram",
-    href: process.env.REACT_APP_SOCIAL_INSTAGRAM || "",
+    href: import.meta.env.VITE_SOCIAL_INSTAGRAM || "",
     brand: "#E4405F",
     icon: (
       <svg
@@ -48,7 +48,7 @@ const SOCIAL_LINKS: SocialLink[] = [
   {
     key: "facebook",
     label: "Facebook",
-    href: process.env.REACT_APP_SOCIAL_FACEBOOK || "",
+    href: import.meta.env.VITE_SOCIAL_FACEBOOK || "",
     brand: "#1877F2",
     icon: (
       <svg
@@ -65,7 +65,7 @@ const SOCIAL_LINKS: SocialLink[] = [
   {
     key: "youtube",
     label: "YouTube",
-    href: process.env.REACT_APP_SOCIAL_YOUTUBE || "",
+    href: import.meta.env.VITE_SOCIAL_YOUTUBE || "",
     brand: "#FF0000",
     icon: (
       <svg
@@ -82,7 +82,7 @@ const SOCIAL_LINKS: SocialLink[] = [
   {
     key: "twitter",
     label: "X (Twitter)",
-    href: process.env.REACT_APP_SOCIAL_TWITTER || "",
+    href: import.meta.env.VITE_SOCIAL_TWITTER || "",
     brand: "#0F1419",
     brandDark: "#E7E9EA",
     icon: (
@@ -100,7 +100,7 @@ const SOCIAL_LINKS: SocialLink[] = [
   {
     key: "linkedin",
     label: "LinkedIn",
-    href: process.env.REACT_APP_SOCIAL_LINKEDIN || "",
+    href: import.meta.env.VITE_SOCIAL_LINKEDIN || "",
     brand: "#0A66C2",
     icon: (
       <svg
@@ -117,7 +117,7 @@ const SOCIAL_LINKS: SocialLink[] = [
   {
     key: "github",
     label: "GitHub",
-    href: process.env.REACT_APP_SOCIAL_GITHUB || "",
+    href: import.meta.env.VITE_SOCIAL_GITHUB || "",
     brand: "#24292F",
     brandDark: "#F0F6FC",
     icon: (
