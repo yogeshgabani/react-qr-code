@@ -50,6 +50,7 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
   const [shape, setShape] = useState(initialShape);
   const [cornerStyle, setCornerStyle] = useState(initialCornerStyle);
   const [eyeShape, setEyeShape] = useState(initialEyeShape);
+  const [moduleSpacing, setModuleSpacing] = useState(0);
 
   const qrProps: QRCodeProps = {
     value,
@@ -60,6 +61,7 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
     shape: shape as any,
     cornerStyle: cornerStyle as any,
     eyeShape: eyeShape as any,
+    moduleSpacing,
   };
 
   const generateCode = () => {
@@ -72,6 +74,7 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
     if (shape !== 'square') props.push(`shape="${shape}"`);
     if (cornerStyle !== 'square') props.push(`cornerStyle="${cornerStyle}"`);
     if (eyeShape !== 'square') props.push(`eyeShape="${eyeShape}"`);
+    if (moduleSpacing !== 0) props.push(`moduleSpacing={${moduleSpacing.toFixed(2)}}`);
 
     const propsStr = props.length > 0 ? `\n  ${props.join('\n  ')}\n` : '';
     return `import { QRCode } from 'react-qr-master';\n\nexport function MyQRCode() {\n  return (\n    <QRCode${propsStr}/>\n  );\n}`;
@@ -86,6 +89,7 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
     setShape(initialShape);
     setCornerStyle(initialCornerStyle);
     setEyeShape(initialEyeShape);
+    setModuleSpacing(0);
   };
 
   const handleClose = () => {
@@ -296,12 +300,13 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: 14,
-              padding: 20,
+              gap: 16,
+              padding: '20px',
               background: 'rgba(255,255,255,0.02)',
               borderRight: `1px solid ${tokens.border}`,
               overflow: 'auto',
-              alignItems: 'center',
+              alignItems: 'stretch',
+              minWidth: 0,
             }}
           >
             {/* QR Preview - Responsive */}
@@ -325,60 +330,93 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             </div>
 
             {/* Download & Copy Buttons */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
               <button
                 onClick={() => download('png', { pixelSize: 1024 })}
                 style={{
                   padding: '12px 14px',
-                  background: tokens.primary,
-                  color: '#000',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                  color: '#fff',
                   border: 'none',
                   borderRadius: 8,
                   cursor: 'pointer',
                   fontSize: 13,
                   fontWeight: 700,
                   transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.opacity = '0.9';
                   e.currentTarget.style.transform = 'scale(0.98)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(59, 130, 246, 0.5)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.opacity = '1';
                   e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
                 }}
               >
-                📥 PNG
+                🖼 PNG
               </button>
               <button
                 onClick={() => download('svg')}
                 style={{
                   padding: '12px 14px',
-                  background: tokens.primary,
-                  color: '#000',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: '#fff',
                   border: 'none',
                   borderRadius: 8,
                   cursor: 'pointer',
                   fontSize: 13,
                   fontWeight: 700,
                   transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.opacity = '0.9';
                   e.currentTarget.style.transform = 'scale(0.98)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.5)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.opacity = '1';
                   e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
                 }}
               >
-                📥 SVG
+                📄 SVG
+              </button>
+              <button
+                onClick={() => download('pdf')}
+                style={{
+                  padding: '12px 14px',
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '0.9';
+                  e.currentTarget.style.transform = 'scale(0.98)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(245, 158, 11, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.3)';
+                }}
+              >
+                📋 PDF
               </button>
             </div>
 
             {/* Code Section */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <label style={labelStyle as any}>React Code</label>
                 <CopyButton text={generateCode()} label="Copy" variant="outline" size="sm" />
               </div>
@@ -388,14 +426,19 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
                   background: 'rgba(0,0,0,0.5)',
                   border: `1px solid ${tokens.border}`,
                   borderRadius: 8,
-                  padding: 12,
-                  fontSize: 10,
-                  lineHeight: 1.4,
+                  padding: '12px 14px',
+                  fontSize: 11,
+                  lineHeight: 1.5,
                   color: tokens.text,
                   fontFamily: "'JetBrains Mono', monospace",
                   margin: 0,
                   overflow: 'auto',
-                  maxHeight: 150,
+                  maxHeight: '200px',
+                  minHeight: '100px',
+                  whiteSpace: 'pre-wrap',
+                  wordWrap: 'break-word' as any,
+                  width: '100%',
+                  boxSizing: 'border-box' as any,
                 }}
               >
                 <code>{generateCode()}</code>
@@ -440,6 +483,23 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
                 onChange={(e) => setSize(Number(e.target.value))}
                 style={{ width: '100%', cursor: 'pointer', height: 6 }}
               />
+            </div>
+
+            {/* Module Spacing */}
+            <div>
+              <label style={labelStyle}>Module Spacing: {(moduleSpacing * 100).toFixed(0)}%</label>
+              <input
+                type="range"
+                min={0}
+                max={0.5}
+                step={0.05}
+                value={moduleSpacing}
+                onChange={(e) => setModuleSpacing(Number(e.target.value))}
+                style={{ width: '100%', cursor: 'pointer', height: 6 }}
+              />
+              <p style={{ fontSize: 9, color: tokens.textSubtle, margin: '4px 0 0' }}>
+                0% = no gaps, 50% = maximum gaps
+              </p>
             </div>
 
             {/* Error Correction */}
