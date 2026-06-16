@@ -96,6 +96,9 @@ export type { QRTheme } from './core/themes';
 export { TEMPLATES } from './core/templates';
 export type { QRTemplate, TemplateCategory } from './core/templates';
 
+// ── Animations ──────────────────────────────────────────────────────────────
+export { getAnimationCSS } from './core/animations';
+
 // ── Payload encoders (for headless / advanced use) ──────────────────────────
 export {
   encodeWiFi,

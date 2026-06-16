@@ -3,6 +3,7 @@ export { HowToUse } from './HowToUse';
 export { GettingStarted } from './GettingStarted';
 export { QRCodeModal } from './QRCodeModal';
 export { ClickableQR } from './ClickableQR';
+export { SocialIcons } from './SocialIcons';
 export type { CopyButtonProps } from './CopyButton';
 export type { CodeExample, HowToUseProps } from './HowToUse';
 export type { QRCodeModalProps } from './QRCodeModal';
