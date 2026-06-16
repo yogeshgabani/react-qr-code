@@ -227,56 +227,69 @@ export default function App() {
         >
           <div
             style={{
-              padding: "0 8px 16px",
+              padding: "16px 12px",
               borderBottom: `1px solid ${tokens.border}`,
-              marginBottom: 8,
+              marginBottom: 16,
+              marginLeft: -8,
+              marginRight: -8,
+              marginTop: -16,
+              background: `linear-gradient(135deg, rgba(168,85,247,0.08) 0%, rgba(34,211,238,0.04) 100%)`,
+              borderTop: "none",
             }}
           >
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 10,
-                fontWeight: 800,
-                fontSize: 16,
-                letterSpacing: -0.2,
+                gap: 12,
+                fontWeight: 900,
+                fontSize: 15,
+                letterSpacing: -0.3,
               }}
             >
               <div
                 style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  background: "linear-gradient(135deg,#a855f7,#22d3ee)",
+                  width: 40,
+                  height: 40,
+                  borderRadius: 12,
+                  background: "linear-gradient(135deg,#a855f7 0%,#22d3ee 100%)",
                   display: "grid",
                   placeItems: "center",
-                  fontSize: 16,
-                  boxShadow: "0 6px 20px rgba(168,85,247,0.35)",
+                  fontSize: 20,
+                  boxShadow: "0 8px 24px rgba(168,85,247,0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  flexShrink: 0,
                 }}
               >
-                â—‰
+                🌀
               </div>
-              <span
-                style={{
-                  background: "linear-gradient(135deg,#fff,#c4b5fd)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  color: "transparent",
-                }}
-              >
-                react-qr-master
-              </span>
-            </div>
-            <div
-              style={{
-                marginTop: 6,
-                fontSize: 11,
-                color: tokens.textSubtle,
-                fontFamily: "'JetBrains Mono', monospace",
-                letterSpacing: 0.4,
-              }}
-            >
-              v0.1.0 Â· playground
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    background: "linear-gradient(135deg,#ffffff 0%,#c4b5fd 100%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                    fontSize: 16,
+                    fontWeight: 900,
+                    margin: 0,
+                  }}
+                >
+                  react-qr-master
+                </div>
+                <div
+                  style={{
+                    marginTop: 2,
+                    fontSize: 10,
+                    color: tokens.textMuted,
+                    fontFamily: "'JetBrains Mono', monospace",
+                    letterSpacing: 0.5,
+                    textTransform: "uppercase",
+                    fontWeight: 600,
+                  }}
+                >
+                  v0.1.0 • playground
+                </div>
+              </div>
             </div>
           </div>
 
@@ -761,7 +774,7 @@ export default function App() {
                     justifyContent: "space-between",
                     flexWrap: "wrap",
                     gap: 18,
-                    padding: "18px 22px",
+                    padding: "18px 0px",
                     marginBottom: 20,
                     borderRadius: 16,
                     border: "1px solid rgb(var(--border-rgb) / 0.12)",
