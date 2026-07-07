@@ -90,6 +90,8 @@ export interface QRCodeProps {
   gradient?: QRGradient;
   /** CSS animation applied to the QR. */
   animation?: QRAnimation;
+  /** Spacing between modules (0..0.5). 0 = no gap, 0.5 = maximum gap. */
+  moduleSpacing?: number;
 
   // ── DOM ──────────────────────────────────────────────────────────────────
   className?: string;
@@ -135,6 +137,7 @@ export const QRCode = forwardRef<SVGSVGElement, QRCodeProps>(function QRCode(pro
     logoBorderWidth = 0.5,
     frame = 'square',
     theme: themeName,
+    moduleSpacing = 0,
     className,
     style,
     id,
@@ -221,7 +224,7 @@ export const QRCode = forwardRef<SVGSVGElement, QRCodeProps>(function QRCode(pro
     for (let c = 0; c < count; c++) {
       if (!row[c]) continue;
       if (isInFinderPattern(r, c, count)) continue;
-      dataNodes.push(renderModule(shape, c + margin, r + margin, `${r}-${c}`));
+      dataNodes.push(renderModule(shape, c + margin, r + margin, `${r}-${c}`, moduleSpacing));
     }
   }
 

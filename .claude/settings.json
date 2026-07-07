@@ -5,7 +5,11 @@
       "Bash(pkill -f \"vite\\\\|npm run\")",
       "Bash(git commit -m ' *)",
       "Bash(git commit -m 'Fix GettingStarted.tsx syntax error - complete the component *)",
-      "Bash(git commit -m 'Fix modal size scaling and add smooth open animations *)"
+      "Bash(git commit -m 'Fix modal size scaling and add smooth open animations *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\yogesh\\\\New folder \\(3\\)\\\\react-qr-code\\\\\" -File | Where-Object { $_.Name -match \"tsup|vite|build\" })",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -s https://react-datetime-picker.netlify.app/)",
+      "Bash(curl -s https://react-datetime-picker.netlify.app/assets/index-k0KxvgN-.css)"
     ]
   }
 }

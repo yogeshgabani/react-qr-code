@@ -34,44 +34,93 @@
 
 ```bash
 npm install react-qr-master
+# or
+yarn add react-qr-master
+# or
+pnpm add react-qr-master
 ```
 
-## Quick Start
+**Requirements:** React **18+** and React DOM **18+** (they are peer dependencies, so they use the versions already in your app). Works with any React setup — Vite, Next.js, Create React App, Remix, etc.
 
-### Basic QR Code
+The package ships ESM + CJS builds and its own TypeScript types — no `@types` package needed.
+
+## Getting Started (How to Use)
+
+The whole library is just React components — import one, give it a `value`, and render it. No provider, no config, no async setup.
+
+### 1. Render your first QR code
 
 ```tsx
-import { QRCode } from 'react-qr-master';
+import { QRCode } from "react-qr-master";
 
 export default function App() {
   return <QRCode value="https://example.com" size={256} />;
 }
 ```
 
+That's it — `value` is the only required prop. `value` can be any string: a URL, plain text, a phone number, WiFi string, etc.
+
+### 2. Style it
+
+Every visual prop is optional and composable:
+
+```tsx
+<QRCode
+  value="https://example.com"
+  size={280}
+  fgColor="#4f46e5" // module color
+  bgColor="#ffffff" // background color
+  shape="rounded" // module shape
+  cornerStyle="rounded" // finder "eye" outer ring
+  eyeShape="circle" // finder "eye" inner pupil
+  level="H" // error correction: L | M | Q | H
+/>
+```
+
+### 3. Or use a specialized type
+
+Instead of hand-building the `value`, use a wrapper that encodes it for you:
+
+```tsx
+import { WiFiQR, ContactQR } from "react-qr-master";
+
+// Scanning this connects the phone to WiFi automatically
+<WiFiQR ssid="HomeNetwork" password="secret123" encryption="WPA2" size={256} />
+
+// Scanning this saves a contact (vCard)
+<ContactQR firstName="Jane" lastName="Doe" email="jane@acme.com" mobile="+1 415 555 2671" size={256} />
+```
+
+All design props (`shape`, `theme`, `gradient`, `logo`, …) work on every specialized type too.
+
+### 4. Let users download it
+
+Attach the `ref` from `useQRDownload`, then call `download(format)` — see [Download QR Codes](#download-qr-codes) below.
+
+> **Next.js note:** these are client components. In the App Router, add `"use client"` at the top of any file that renders a QR component.
+
+## More Examples
+
 ### Website QR
 
 ```tsx
-import { WebsiteQR } from 'react-qr-master';
+import { WebsiteQR } from "react-qr-master";
 
-<WebsiteQR url="https://example.com" size={256} />
+<WebsiteQR url="https://example.com" size={256} />;
 ```
 
 ### With Theme
 
 ```tsx
-import { QRCode, THEMES } from 'react-qr-master';
+import { QRCode, THEMES } from "react-qr-master";
 
-<QRCode
-  value="https://example.com"
-  theme="neon"
-  size={256}
-/>
+<QRCode value="https://example.com" theme="neon" size={256} />;
 ```
 
 ### Full Customization
 
 ```tsx
-import { QRCode } from 'react-qr-master';
+import { QRCode } from "react-qr-master";
 
 <QRCode
   value="https://example.com"
@@ -84,29 +133,31 @@ import { QRCode } from 'react-qr-master';
   fgColor="#667eea"
   bgColor="#ffffff"
   animation="pulse"
-/>
+/>;
 ```
 
 ## Available QR Types
 
-| Type | Component | Props |
-|------|-----------|-------|
-| Generic | `QRCode` | `value` |
-| Website | `WebsiteQR` | `url` |
-| Text | `TextQR` | `text` |
-| WiFi | `WiFiQR` | `ssid, password, security` |
-| Email | `EmailQR` | `email, subject, body` |
-| Phone | `PhoneQR` | `phone` |
-| SMS | `SMSQR` | `phone, message` |
-| WhatsApp | `WhatsAppQR` | `phone, message` |
-| Contact | `ContactQR` | `name, email, phone, org` |
-| Google Maps | `GoogleMapsQR` | `lat, lng, zoom` |
-| Location | `LocationQR` | `lat, lng, altitude` |
-| Event | `EventQR` | `title, startDate, startTime, location` |
-| Calendar | `CalendarQR` | `title, startDate, startTime, endDate, endTime` |
-| UPI | `UPIQR` | `upiId, payeeName, amount` |
-| Crypto | `CryptoQR` | `coin, address` |
-| Social | `SocialQR` | `platform, handle` |
+Each specialized component takes the fields below **plus every design prop** of `QRCode` (`size`, `shape`, `theme`, `gradient`, `logo`, colors, …).
+
+| Type        | Component      | Key props                                                  |
+| ----------- | -------------- | ---------------------------------------------------------- |
+| Generic     | `QRCode`       | `value`                                                    |
+| Website     | `WebsiteQR`    | `url`                                                      |
+| Text        | `TextQR`       | `text`                                                     |
+| WiFi        | `WiFiQR`       | `ssid, password, encryption, hidden`                      |
+| Email       | `EmailQR`      | `to, subject, body`                                        |
+| Phone       | `PhoneQR`      | `phoneNumber`                                              |
+| SMS         | `SMSQR`        | `phoneNumber, message`                                     |
+| WhatsApp    | `WhatsAppQR`   | `phoneNumber, message`                                     |
+| Contact     | `ContactQR`    | `firstName, lastName, email, mobile, organization, website`|
+| Google Maps | `GoogleMapsQR` | `query` _or_ `latitude, longitude`                        |
+| Location    | `LocationQR`   | `latitude, longitude, query`                              |
+| Event       | `EventQR`      | `title, start, end, location`                             |
+| Calendar    | `CalendarQR`   | `title, start, end, recurrence`                           |
+| UPI         | `UPIQR`        | `payeeVPA, payeeName, amount, note`                       |
+| Crypto      | `CryptoQR`     | `coin, address, amount`                                   |
+| Social      | `SocialQR`     | `platform, username`                                      |
 
 ## Themes
 
@@ -163,6 +214,7 @@ Apply smooth animations to your QR codes:
 ## Module Customization
 
 ### Shapes
+
 8 different module shapes for visual variety:
 
 ```tsx
@@ -177,6 +229,7 @@ Apply smooth animations to your QR codes:
 ```
 
 ### Module Spacing
+
 Create visible gaps between modules:
 
 ```tsx
@@ -213,41 +266,44 @@ Create visible gaps between modules:
 
 ## Download QR Codes
 
-Export QR codes in multiple formats:
+Use the `useQRDownload` hook. It gives you a `ref` (attach it to the `QRCode`) and a `download(format, options?)` function.
 
 ```tsx
-import { useQRDownload } from 'react-qr-master';
+import { QRCode, useQRDownload } from "react-qr-master";
 
-function MyComponent() {
-  const { downloadPNG, downloadSVG, downloadPDF } = useQRDownload();
+function DownloadableQR() {
+  const { ref, download } = useQRDownload();
 
   return (
     <>
-      <button onClick={() => downloadPNG('qr-code', 300)}>
-        Download PNG
-      </button>
-      <button onClick={() => downloadSVG('qr-code', 300)}>
-        Download SVG
-      </button>
-      <button onClick={() => downloadPDF('qr-code', 300)}>
-        Download PDF
-      </button>
+      <QRCode ref={ref} value="https://example.com" size={256} />
+
+      <button onClick={() => download("png", { pixelSize: 1024 })}>PNG</button>
+      <button onClick={() => download("svg")}>SVG</button>
+      <button onClick={() => download("pdf", { filename: "my-qr.pdf" })}>PDF</button>
     </>
   );
 }
 ```
+
+**Supported formats:** `"svg"`, `"png"`, `"jpg"`, `"jpeg"`, `"webp"`, `"pdf"`.
+
+**Options** (second argument, all optional):
+
+| Option      | Type     | Default          | Description                                  |
+| ----------- | -------- | ---------------- | -------------------------------------------- |
+| `filename`  | `string` | `qrcode.<format>`| Downloaded file name.                        |
+| `pixelSize` | `number` | `1024`           | Output resolution in px (raster/PDF formats).|
+| `quality`   | `number` | —                | 0–1 quality for `jpg` / `webp`.              |
 
 ## Interactive Studio
 
 Full-featured QR code designer:
 
 ```tsx
-import { QRStudio } from 'react-qr-master';
+import { QRStudio } from "react-qr-master";
 
-<QRStudio
-  initialValue="https://example.com"
-  onCodeGenerated={(props) => console.log(props)}
-/>
+<QRStudio initialValue="https://example.com" />;
 ```
 
 ## QR Scanner
@@ -255,15 +311,16 @@ import { QRStudio } from 'react-qr-master';
 Scan QR codes with camera support:
 
 ```tsx
-import { QRScanner } from 'react-qr-master';
+import { QRScanner } from "react-qr-master";
 
 <QRScanner
-  onScan={(result) => console.log('Scanned:', result)}
+  onScan={(result) => console.log("Scanned:", result)}
   onError={(error) => console.error(error)}
-/>
+/>;
 ```
 
 Features:
+
 - 📷 Camera-based scanning
 - 📁 File upload support (PNG, JPEG, WebP, PDF, SVG)
 - ✅ Automatic QR detection
@@ -276,32 +333,39 @@ Features:
 Create multiple QR codes at once:
 
 ```tsx
-import { QRBatchGenerator } from 'react-qr-master';
+import { QRBatchGenerator } from "react-qr-master";
 
-const data = [
-  { url: 'https://example1.com', name: 'QR1' },
-  { url: 'https://example2.com', name: 'QR2' },
+const rows = [
+  { id: "qr1", value: "https://example1.com", label: "QR1" },
+  { id: "qr2", value: "https://example2.com", label: "QR2" },
 ];
 
 <QRBatchGenerator
-  data={data}
-  onGenerated={(codes) => console.log(codes)}
-/>
+  initialRows={rows}
+  qrOptions={{ shape: "rounded", size: 256 }}
+  exportPixelSize={1024}
+/>;
 ```
+
+Users can also import rows from CSV / JSON inside the component and export the whole batch as a ZIP of PNGs or a paginated PDF.
 
 ## Dynamic QR
 
 Create QR codes with editable targets:
 
 ```tsx
-import { DynamicQRCode } from 'react-qr-master';
+import { DynamicQRCode } from "react-qr-master";
 
 <DynamicQRCode
-  shortCode="abc123"
-  targetUrl="https://example.com"
+  id="promo-2026"
+  initialValue="https://example.com"
+  maxScans={1000}
   expiresAt={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
-/>
+  size={256}
+/>;
 ```
+
+State is stored client-side (localStorage). For true cross-device dynamic QR (edit the target after printing), point the QR at your own redirect endpoint.
 
 ## Custom Gradients
 
@@ -311,60 +375,102 @@ Apply gradient effects to modules:
 <QRCode
   value="https://example.com"
   gradient={{
-    type: 'linear',
-    colors: ['#667eea', '#764ba2', '#f093fb'],
-    rotation: 135,
+    type: "linear", // "linear" | "radial" | "conic"
+    colors: ["#667eea", "#764ba2", "#f093fb"],
+    rotation: 135, // degrees (ignored for radial)
   }}
   size={256}
 />
 ```
 
+## Logo / Branding
+
+Drop a logo in the center of the QR. When a `logo` is set, error correction auto-bumps to `H` so the code still scans reliably.
+
+```tsx
+<QRCode
+  value="https://example.com"
+  size={300}
+  logo="/logo.png" // URL or data URI (PNG / SVG / JPG / WEBP)
+  logoSize={0.22} // fraction of QR size, 0–0.5 (default 0.2)
+  logoShape="rounded" // "square" | "rounded" | "circle"
+  logoPadding={1} // quiet space around the logo, in module units
+/>
+```
+
+Extra logo controls:
+
+| Prop              | Type                                     | Description                                                     |
+| ----------------- | ---------------------------------------- | -------------------------------------------------------------- |
+| `logoMode`        | `"foreground" \| "embedded" \| "background"` | `foreground` = box behind logo; `embedded` = no box; `background` = image fills the QR. |
+| `logoPosition`    | `"center" \| "top" \| "bottom" \| "left" \| "right"` | Placement (ignored in `background` mode).              |
+| `logoBorderColor` | `string`                                 | Border color around the logo cut-out.                          |
+| `logoBorderWidth` | `number`                                 | Border thickness in module units.                              |
+
+> **Tip:** keep `logoSize` around `0.2`. Too large and the logo covers more modules than the error correction can recover, breaking scans.
+
 ## Hooks
 
 ### useQRDownload
+
 ```tsx
-const { downloadPNG, downloadSVG, downloadPDF } = useQRDownload();
+const { ref, download } = useQRDownload();
+// attach ref to <QRCode ref={ref} .../>, then:
+download("png", { pixelSize: 1024, filename: "qr.png" });
 ```
 
 ### useQRGenerator
+
+Headless — returns the raw module matrix for custom rendering (canvas, native, ASCII, …).
+
 ```tsx
-const { generate, error, loading } = useQRGenerator();
+const matrix = useQRGenerator("https://example.com", "M");
+// matrix.size, matrix.modules (boolean[][])
 ```
 
 ### useDynamicQR
+
+Client-side dynamic-QR state, persisted to `localStorage`.
+
 ```tsx
-const { create, update, delete: remove } = useDynamicQR({
-  domain: 'qr.example.com',
-});
+const { value, setValue, recordScan, reset, scanCount, expired, overUsed } =
+  useDynamicQR({
+    id: "promo-2026",
+    initialValue: "https://example.com/landing",
+    maxScans: 1000,
+    expiresAt: "2026-12-31",
+  });
 ```
 
 ### useBatchQR
+
+Import rows from CSV / JSON, then render or export them.
+
 ```tsx
-const { generate, progress, total } = useBatchQR();
+const { rows, setRows, importCSV, importJSON, clear, error } = useBatchQR();
 ```
 
 ### useQRAnalytics
+
+Client-side scan tracking + summary.
+
 ```tsx
-const { scans, summary } = useQRAnalytics(qrId);
+const { summary, track, clear } = useQRAnalytics();
+track("qr-id", "https://example.com"); // record a scan
 ```
 
 ## Complete Example
 
 ```tsx
-import React, { useState } from 'react';
-import {
-  QRCode,
-  WebsiteQR,
-  THEMES,
-  useQRDownload,
-} from 'react-qr-master';
+import React, { useState } from "react";
+import { QRCode, WebsiteQR, THEMES, useQRDownload } from "react-qr-master";
 
 export function QRCodeGenerator() {
-  const [url, setUrl] = useState('https://example.com');
-  const [theme, setTheme] = useState('modern');
-  const [shape, setShape] = useState('rounded');
+  const [url, setUrl] = useState("https://example.com");
+  const [theme, setTheme] = useState("modern");
+  const [shape, setShape] = useState("rounded");
   const [moduleSpacing, setModuleSpacing] = useState(0.1);
-  const { downloadPNG, downloadSVG, downloadPDF } = useQRDownload();
+  const { ref, download } = useQRDownload();
 
   return (
     <div style={{ padding: 40 }}>
@@ -390,14 +496,17 @@ export function QRCodeGenerator() {
         ))}
       </select>
 
-      <div style={{
-        padding: 30,
-        backgroundColor: '#f5f5f5',
-        borderRadius: 12,
-        marginBottom: 20,
-        textAlign: 'center',
-      }}>
+      <div
+        style={{
+          padding: 30,
+          backgroundColor: "#f5f5f5",
+          borderRadius: 12,
+          marginBottom: 20,
+          textAlign: "center",
+        }}
+      >
         <QRCode
+          ref={ref}
           value={url}
           theme={theme as any}
           shape={shape as any}
@@ -406,9 +515,9 @@ export function QRCodeGenerator() {
         />
       </div>
 
-      <button onClick={() => downloadPNG('qr-code', 256)}>Download PNG</button>
-      <button onClick={() => downloadSVG('qr-code', 256)}>Download SVG</button>
-      <button onClick={() => downloadPDF('qr-code', 256)}>Download PDF</button>
+      <button onClick={() => download("png", { pixelSize: 512 })}>Download PNG</button>
+      <button onClick={() => download("svg")}>Download SVG</button>
+      <button onClick={() => download("pdf")}>Download PDF</button>
     </div>
   );
 }
@@ -427,7 +536,7 @@ import type {
   ModuleShape,
   CornerStyle,
   EyeShape,
-} from 'react-qr-master';
+} from "react-qr-master";
 ```
 
 ## Browser Support
@@ -450,7 +559,10 @@ For detailed API documentation, see [FEATURES.md](./FEATURES.md).
 
 ## License
 
-MIT © [2024-present]
+MIT © [2024-present] © react-datetime-kit
+MIT License - Copyright (c) 2026 **Yogesh Gabani**
+
+Built by **Yogesh Gabani**.
 
 ## Contributing
 
@@ -468,8 +580,12 @@ See [CHANGELOG.md](./CHANGELOG.md) for version history.
 npm install react-qr-master
 ```
 
-For more examples and interactive demos, visit the repository and run:
+## Interactive Playground
+
+Want to see every type, theme, shape, and the live designer in action? Clone the repo and run the playground:
 
 ```bash
+# clone this repository, then:
+npm install
 npm run playground
 ```

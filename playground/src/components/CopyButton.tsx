@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { tokens } from '../styles';
+import { Icon } from './Icon';
 
 export interface CopyButtonProps {
   text: string;
@@ -25,11 +26,13 @@ export function CopyButton({ text, label = 'Copy', variant = 'minimal', size = '
     ? { padding: '6px 10px', fontSize: 12 }
     : { padding: '8px 14px', fontSize: 13 };
 
+  // `minimal` is the default and always sits on white QR cards (in both themes),
+  // so it uses fixed light-surface colors rather than theme variables.
   const variantStyles = variant === 'minimal'
     ? {
-        background: 'transparent',
-        border: `1px solid ${tokens.border}`,
-        color: copied ? tokens.success : tokens.textMuted,
+        background: 'rgba(15,23,42,0.04)',
+        border: `1px solid rgba(15,23,42,0.14)`,
+        color: copied ? '#059669' : '#475569',
       }
     : variant === 'filled'
     ? {
@@ -60,17 +63,18 @@ export function CopyButton({ text, label = 'Copy', variant = 'minimal', size = '
       }}
       onMouseEnter={(e) => {
         if (!copied) {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+          e.currentTarget.style.background =
+            variant === 'minimal' ? 'rgba(15,23,42,0.09)' : tokens.bgCardHover;
           e.currentTarget.style.borderColor = tokens.borderBright;
         }
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = variantStyles.background;
-        e.currentTarget.style.borderColor = variantStyles.border;
+        e.currentTarget.style.border = variantStyles.border;
       }}
       title={`${label} (${text.length} characters)`}
     >
-      <span>{copied ? '✓' : '📋'}</span>
+      <Icon name={copied ? 'check' : 'copy'} size={14} />
       <span>{copied ? 'Copied!' : label}</span>
     </button>
   );

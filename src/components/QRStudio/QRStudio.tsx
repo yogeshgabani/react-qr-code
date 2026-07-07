@@ -747,6 +747,7 @@ export function QRStudio({
   const [logoBorderWidth, setLogoBorderWidth] = useState(0.6);
   const [frame, setFrame] = useState<'square' | 'rounded'>('square');
   const [margin, setMargin] = useState(4);
+  const [moduleSpacing, setModuleSpacing] = useState(0);
 
   // Adding a logo covers data modules, so the QR needs higher error correction
   // to stay scannable. Bump from default 'M' to 'H' on add, but respect an
@@ -927,6 +928,7 @@ export function QRStudio({
               cornerStyle={cornerStyle}
               eyeShape={eyeShape}
               margin={margin}
+              moduleSpacing={moduleSpacing}
               {...(theme ? { theme } : {})}
               {...(animation !== 'none' ? { animation } : {})}
               {...(gradient ? { gradient } : {})}
@@ -1174,6 +1176,17 @@ export function QRStudio({
                     </option>
                   ))}
                 </select>
+              </Field>
+              <Field label={`Module spacing: ${(moduleSpacing * 100).toFixed(0)}%`}>
+                <input
+                  type="range"
+                  min="0"
+                  max="0.5"
+                  step="0.05"
+                  value={moduleSpacing}
+                  onChange={(e) => setModuleSpacing(parseFloat(e.target.value))}
+                  style={{ width: '100%', cursor: 'pointer' }}
+                />
               </Field>
             </>
           ) : null}

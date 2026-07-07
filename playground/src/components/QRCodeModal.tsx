@@ -1,7 +1,15 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { QRCode, useQRDownload, type QRCodeProps } from 'react-qr-master';
 import { tokens } from '../styles';
 import { CopyButton } from './CopyButton';
+import { Icon } from './Icon';
+
+const btnInner = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+} as const;
 
 export interface QRCodeModalProps {
   isOpen: boolean;
@@ -28,9 +36,24 @@ const DEFAULTS = {
   eyeShape: 'square',
 };
 
+/** Track a max-width breakpoint with a resize listener (inline styles can't use media queries). */
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < breakpoint,
+  );
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < breakpoint);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Code Designer' }: QRCodeModalProps) {
   const { ref, download } = useQRDownload();
-  const codeRef = useRef<HTMLDivElement>(null);
+  const codeRef = useRef<HTMLPreElement>(null);
+  const isMobile = useIsMobile(768);
 
   // Initialize with provided values or defaults
   const initialValue = initialProps.value || DEFAULTS.value;
@@ -51,6 +74,9 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
   const [cornerStyle, setCornerStyle] = useState(initialCornerStyle);
   const [eyeShape, setEyeShape] = useState(initialEyeShape);
   const [moduleSpacing, setModuleSpacing] = useState(0);
+  const [logo, setLogo] = useState<string>(initialProps.logo || '');
+  const [logoSize, setLogoSize] = useState(0.22);
+  const [logoShape, setLogoShape] = useState<'square' | 'rounded' | 'circle'>('rounded');
 
   const qrProps: QRCodeProps = {
     value,
@@ -62,6 +88,17 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
     cornerStyle: cornerStyle as any,
     eyeShape: eyeShape as any,
     moduleSpacing,
+    ...(logo ? { logo, logoSize, logoShape } : {}),
+  };
+
+  const handleLogoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setLogo(reader.result as string);
+    reader.readAsDataURL(file);
+    // Allow re-selecting the same file later.
+    e.target.value = '';
   };
 
   const generateCode = () => {
@@ -75,6 +112,11 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
     if (cornerStyle !== 'square') props.push(`cornerStyle="${cornerStyle}"`);
     if (eyeShape !== 'square') props.push(`eyeShape="${eyeShape}"`);
     if (moduleSpacing !== 0) props.push(`moduleSpacing={${moduleSpacing.toFixed(2)}}`);
+    if (logo) {
+      props.push(`logo="/your-logo.png"`);
+      props.push(`logoSize={${logoSize.toFixed(2)}}`);
+      if (logoShape !== 'square') props.push(`logoShape="${logoShape}"`);
+    }
 
     const propsStr = props.length > 0 ? `\n  ${props.join('\n  ')}\n` : '';
     return `import { QRCode } from 'react-qr-master';\n\nexport function MyQRCode() {\n  return (\n    <QRCode${propsStr}/>\n  );\n}`;
@@ -90,6 +132,9 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
     setCornerStyle(initialCornerStyle);
     setEyeShape(initialEyeShape);
     setModuleSpacing(0);
+    setLogo(initialProps.logo || '');
+    setLogoSize(0.22);
+    setLogoShape('rounded');
   };
 
   const handleClose = () => {
@@ -145,16 +190,20 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
   };
 
   const chipStyle = (active: boolean, color?: string) => ({
-    padding: '10px 12px',
+    padding: isMobile ? '8px 6px' : '10px 8px',
     background: active ? (color || tokens.primary) : tokens.bgCard,
     border: `2px solid ${active ? (color || tokens.primary) : tokens.border}`,
     borderRadius: 10,
     color: active ? '#fff' : tokens.textMuted,
-    fontSize: 12,
+    fontSize: isMobile ? 10.5 : 12,
     fontWeight: 700 as const,
     cursor: 'pointer' as const,
     transition: 'all 0.2s ease',
     boxShadow: active ? `0 0 12px ${(color || tokens.primary)}40` : 'none',
+    overflow: 'hidden' as const,
+    textOverflow: 'ellipsis' as const,
+    whiteSpace: 'nowrap' as const,
+    minWidth: 0,
   });
 
   // Color schemes for different button types
@@ -221,7 +270,7 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
       >
         <div
           style={{
-            background: tokens.bgCard,
+            background: tokens.bgCardSolid,
             border: `2px solid ${tokens.primary}`,
             borderRadius: 16,
             backdropFilter: 'blur(12px)',
@@ -242,12 +291,24 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '20px 24px',
+            gap: 12,
+            padding: isMobile ? '14px 16px' : '20px 24px',
             borderBottom: `1px solid ${tokens.border}`,
             background: 'rgba(0,0,0,0.2)',
           }}
         >
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: tokens.text }}>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: isMobile ? 16 : 18,
+              fontWeight: 800,
+              color: tokens.text,
+              minWidth: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
             {title}
           </h2>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -293,19 +354,29 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
           </div>
         </div>
 
-        {/* Content: Two column layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 0, flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        {/* Content: Two column on desktop, stacked + single-scroll on mobile */}
+        <div
+          style={{
+            display: isMobile ? 'block' : 'grid',
+            gridTemplateColumns: isMobile ? undefined : '1fr 1.2fr',
+            gap: 0,
+            flex: 1,
+            minHeight: 0,
+            overflow: 'auto',
+          }}
+        >
           {/* Left: Preview & Code */}
           <div
             style={{
               display: 'flex',
+              alignItems: 'center',
               flexDirection: 'column',
               gap: 16,
-              padding: '20px',
+              padding: isMobile ? '12px' : '20px',
               background: 'rgba(255,255,255,0.02)',
-              borderRight: `1px solid ${tokens.border}`,
-              overflow: 'auto',
-              alignItems: 'stretch',
+              borderRight: isMobile ? 'none' : `1px solid ${tokens.border}`,
+              borderBottom: isMobile ? `1px solid ${tokens.border}` : 'none',
+              overflow: isMobile ? 'visible' : 'auto',
               minWidth: 0,
             }}
           >
@@ -334,13 +405,13 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
               <button
                 onClick={() => download('png', { pixelSize: 1024 })}
                 style={{
-                  padding: '12px 14px',
+                  padding: isMobile ? '10px 8px' : '12px 14px',
                   background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                   color: '#fff',
                   border: 'none',
                   borderRadius: 8,
                   cursor: 'pointer',
-                  fontSize: 13,
+                  fontSize: isMobile ? 11.5 : 13,
                   fontWeight: 700,
                   transition: 'all 0.2s ease',
                   boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
@@ -356,18 +427,20 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
                   e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
                 }}
               >
-                🖼 PNG
+                <span style={btnInner}>
+                  <Icon name="image" size={15} /> PNG
+                </span>
               </button>
               <button
                 onClick={() => download('svg')}
                 style={{
-                  padding: '12px 14px',
+                  padding: isMobile ? '10px 8px' : '12px 14px',
                   background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                   color: '#fff',
                   border: 'none',
                   borderRadius: 8,
                   cursor: 'pointer',
-                  fontSize: 13,
+                  fontSize: isMobile ? 11.5 : 13,
                   fontWeight: 700,
                   transition: 'all 0.2s ease',
                   boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
@@ -383,18 +456,20 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
                   e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
                 }}
               >
-                📄 SVG
+                <span style={btnInner}>
+                  <Icon name="code" size={15} /> SVG
+                </span>
               </button>
               <button
                 onClick={() => download('pdf')}
                 style={{
-                  padding: '12px 14px',
+                  padding: isMobile ? '10px 8px' : '12px 14px',
                   background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                   color: '#fff',
                   border: 'none',
                   borderRadius: 8,
                   cursor: 'pointer',
-                  fontSize: 13,
+                  fontSize: isMobile ? 11.5 : 13,
                   fontWeight: 700,
                   transition: 'all 0.2s ease',
                   boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
@@ -410,7 +485,9 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
                   e.currentTarget.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.3)';
                 }}
               >
-                📋 PDF
+                <span style={btnInner}>
+                  <Icon name="file" size={15} /> PDF
+                </span>
               </button>
             </div>
 
@@ -423,13 +500,13 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
               <pre
                 ref={codeRef}
                 style={{
-                  background: 'rgba(0,0,0,0.5)',
-                  border: `1px solid ${tokens.border}`,
+                  background: 'var(--code-bg)',
+                  border: `1px solid var(--code-border)`,
                   borderRadius: 8,
                   padding: '12px 14px',
                   fontSize: 11,
                   lineHeight: 1.5,
-                  color: tokens.text,
+                  color: 'var(--code-text)',
                   fontFamily: "'JetBrains Mono', monospace",
                   margin: 0,
                   overflow: 'auto',
@@ -449,8 +526,8 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
           {/* Right: Controls (Scrollable) */}
           <div
             style={{
-              padding: 24,
-              overflow: 'auto',
+              padding: isMobile ? 16 : 24,
+              overflow: isMobile ? 'visible' : 'auto',
               display: 'flex',
               flexDirection: 'column',
               gap: 18,
@@ -575,10 +652,119 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
               </div>
             </div>
 
+            {/* Logo */}
+            <div>
+              <label style={labelStyle}>Logo</label>
+              {logo ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <img
+                      src={logo}
+                      alt="logo preview"
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 8,
+                        objectFit: 'contain',
+                        background: '#fff',
+                        border: `1px solid ${tokens.border}`,
+                      }}
+                    />
+                    <label
+                      style={{
+                        ...(inputStyle as any),
+                        width: 'auto',
+                        flex: 1,
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        fontSize: 12,
+                        padding: '9px 12px',
+                      }}
+                    >
+                      Replace image
+                      <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
+                    </label>
+                    <button
+                      onClick={() => setLogo('')}
+                      title="Remove logo"
+                      style={{
+                        padding: '9px 12px',
+                        borderRadius: 8,
+                        border: `1px solid ${tokens.border}`,
+                        background: tokens.bgCard,
+                        color: tokens.danger,
+                        cursor: 'pointer',
+                        fontSize: 12,
+                        fontWeight: 700,
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+
+                  {/* Logo size */}
+                  <div>
+                    <label style={{ ...(labelStyle as any), marginBottom: 6 }}>
+                      Logo Size: {(logoSize * 100).toFixed(0)}%
+                    </label>
+                    <input
+                      type="range"
+                      min={0.1}
+                      max={0.4}
+                      step={0.01}
+                      value={logoSize}
+                      onChange={(e) => setLogoSize(Number(e.target.value))}
+                      style={{ width: '100%', cursor: 'pointer', height: 6 }}
+                    />
+                  </div>
+
+                  {/* Logo shape */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                    {(['square', 'rounded', 'circle'] as const).map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => setLogoShape(s)}
+                        style={chipStyle(logoShape === s, tokens.accent) as any}
+                        title={s}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+
+                  <p style={{ fontSize: 9, color: tokens.textSubtle, margin: 0 }}>
+                    Tip: use error correction <strong>H</strong> for the most reliable scans with a logo.
+                  </p>
+                </div>
+              ) : (
+                <label
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    padding: '18px 12px',
+                    borderRadius: 10,
+                    border: `2px dashed ${tokens.border}`,
+                    background: tokens.bgCard,
+                    color: tokens.textMuted,
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                  }}
+                >
+                  <Icon name="image" size={22} />
+                  <span style={{ fontSize: 12, fontWeight: 600 }}>Upload a logo</span>
+                  <span style={{ fontSize: 10, color: tokens.textSubtle }}>PNG, SVG, JPG — placed at the center</span>
+                  <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
+                </label>
+              )}
+            </div>
+
             {/* Module Shape */}
             <div>
               <label style={labelStyle}>Module Shape</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 8 }}>
                 {PRESETS.shapes.map((s) => (
                   <button
                     key={s}
@@ -607,7 +793,7 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             {/* Corner Style */}
             <div>
               <label style={labelStyle}>Corner Style</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 8 }}>
                 {PRESETS.corners.map((c) => (
                   <button
                     key={c}
@@ -636,7 +822,7 @@ export function QRCodeModal({ isOpen, onClose, initialProps = {}, title = 'QR Co
             {/* Eye Shape */}
             <div>
               <label style={labelStyle}>Eye Shape</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 8 }}>
                 {PRESETS.eyes.map((e) => (
                   <button
                     key={e}

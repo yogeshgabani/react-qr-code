@@ -8,7 +8,14 @@ import { ScannerTab } from "./tabs/ScannerTab";
 import { BatchTab } from "./tabs/BatchTab";
 import { DynamicTab } from "./tabs/DynamicTab";
 import { AnalyticsTab } from "./tabs/AnalyticsTab";
-import { GettingStarted, QRCodeModal, SocialIcons } from "./components";
+import {
+  GettingStarted,
+  QRCodeModal,
+  SocialIcons,
+  LiveStats,
+  Icon,
+  ThemeToggle,
+} from "./components";
 import { tokens, pill } from "./styles";
 import { QRModalContext } from "./QRModalContext";
 import type { QRCodeProps } from "react-qr-master";
@@ -149,7 +156,24 @@ const groupLabel: CSSProperties = {
   fontFamily: "'JetBrains Mono', ui-monospace, monospace",
 };
 
+/** Track a max-width breakpoint with a resize listener (inline styles can't use media queries). */
+function useIsMobile(breakpoint = 900) {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < breakpoint,
+  );
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < breakpoint);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 export default function App() {
+  const isMobile = useIsMobile(900);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const [active, setActive] = useState<TabId>(() => {
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get("tab");
@@ -180,7 +204,7 @@ export default function App() {
   const current = TABS.find((t) => t.id === active) ?? TABS[0]!;
   const Tab = current.Component;
 
-  // Sync active tab to URL
+  // Sync active tab to URL and scroll to top
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (active === "types") {
@@ -193,9 +217,42 @@ export default function App() {
         ? window.location.pathname
         : `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState(null, "", newUrl);
+
+    // Scroll to top smoothly when tab changes
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [active]);
 
   const groups = Array.from(new Set(TABS.map((t) => t.group)));
+
+  // Close the mobile drawer whenever we grow to desktop width.
+  useEffect(() => {
+    if (!isMobile) setDrawerOpen(false);
+  }, [isMobile]);
+
+  // Prevent background scroll while the mobile drawer is open.
+  useEffect(() => {
+    if (isMobile && drawerOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [isMobile, drawerOpen]);
+
+  // Handle scroll-to-top button visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <QRModalContext.Provider value={{ openQRModal, closeQRModal }}>
@@ -204,27 +261,143 @@ export default function App() {
           position: "relative",
           zIndex: 1,
           minHeight: "100vh",
-          display: "grid",
-          gridTemplateColumns: "260px minmax(0, 1fr)",
+          display: isMobile ? "block" : "grid",
+          gridTemplateColumns: isMobile ? undefined : "260px minmax(0, 1fr)",
           gap: 0,
         }}
       >
+        {/* â”€â”€ Mobile top bar (hamburger) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {isMobile && (
+          <div
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 40,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "12px 16px",
+              borderBottom: `1px solid ${tokens.border}`,
+              background: "var(--bar-bg)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 10,
+                  background: "linear-gradient(135deg,#a855f7 0%,#22d3ee 100%)",
+                  display: "grid",
+                  placeItems: "center",
+                  color: "#fff",
+                  flexShrink: 0,
+                }}
+              >
+                <Icon name="brand" size={18} />
+              </div>
+              <span
+                style={{
+                  fontSize: 15,
+                  fontWeight: 900,
+                  background: "var(--brand-text-grad)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                react-qr-master
+              </span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <ThemeToggle size={40} />
+              <button
+                aria-label="Open navigation menu"
+                onClick={() => setDrawerOpen(true)}
+                style={{
+                  display: "grid",
+                  placeItems: "center",
+                  width: 40,
+                  height: 40,
+                  borderRadius: 10,
+                  border: `1px solid ${tokens.border}`,
+                  background: tokens.bgCard,
+                  color: tokens.text,
+                  cursor: "pointer",
+                  fontSize: 18,
+                }}
+              >
+                ☰
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* â”€â”€ Drawer backdrop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {isMobile && drawerOpen && (
+          <div
+            onClick={() => setDrawerOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.6)",
+              zIndex: 45,
+            }}
+          />
+        )}
+
         {/* â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <aside
           style={{
             padding: "24px 16px",
             borderRight: `1px solid ${tokens.border}`,
-            background: "rgba(13,13,21,0.55)",
+            background: isMobile
+              ? "var(--sidebar-bg-solid)"
+              : "var(--sidebar-bg)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
-            position: "sticky",
+            position: isMobile ? "fixed" : "sticky",
             top: 0,
+            left: 0,
+            width: isMobile ? 280 : "auto",
+            maxWidth: "85vw",
             height: "100vh",
+            zIndex: 50,
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
+            transform: isMobile
+              ? drawerOpen
+                ? "translateX(0)"
+                : "translateX(-100%)"
+              : "none",
+            transition: "transform 0.25s ease",
           }}
         >
+          {isMobile && (
+            <button
+              aria-label="Close navigation menu"
+              onClick={() => setDrawerOpen(false)}
+              style={{
+                position: "absolute",
+                top: 14,
+                right: 14,
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                border: `1px solid ${tokens.border}`,
+                background: "rgba(255,255,255,0.04)",
+                color: tokens.text,
+                cursor: "pointer",
+                fontSize: 16,
+                zIndex: 2,
+              }}
+            >
+              ✕
+            </button>
+          )}
           <div
             style={{
               padding: "16px 12px",
@@ -255,17 +428,18 @@ export default function App() {
                   background: "linear-gradient(135deg,#a855f7 0%,#22d3ee 100%)",
                   display: "grid",
                   placeItems: "center",
-                  fontSize: 20,
-                  boxShadow: "0 8px 24px rgba(168,85,247,0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  color: "#fff",
+                  boxShadow:
+                    "0 8px 24px rgba(168,85,247,0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
                   flexShrink: 0,
                 }}
               >
-                🌀
+                <Icon name="brand" size={22} />
               </div>
               <div style={{ flex: 1 }}>
                 <div
                   style={{
-                    background: "linear-gradient(135deg,#ffffff 0%,#c4b5fd 100%)",
+                    background: "var(--brand-text-grad)",
                     WebkitBackgroundClip: "text",
                     backgroundClip: "text",
                     color: "transparent",
@@ -300,7 +474,10 @@ export default function App() {
                 <button
                   key={t.id}
                   style={sidebarBtn(t.id === active)}
-                  onClick={() => setActive(t.id)}
+                  onClick={() => {
+                    setActive(t.id);
+                    setDrawerOpen(false);
+                  }}
                   onMouseEnter={(e) => {
                     if (t.id !== active)
                       e.currentTarget.style.background =
@@ -312,9 +489,13 @@ export default function App() {
                   }}
                 >
                   <span
-                    style={{ fontSize: 16, width: 22, textAlign: "center" }}
+                    style={{
+                      width: 22,
+                      display: "grid",
+                      placeItems: "center",
+                    }}
                   >
-                    {t.icon}
+                    <Icon name={t.id} size={18} />
                   </span>
                   <span style={{ flex: 1 }}>{t.label}</span>
                   {t.id === active ? (
@@ -334,6 +515,9 @@ export default function App() {
           ))}
 
           <div style={{ flex: 1 }} />
+          <div style={{ marginBottom: 12 }}>
+            <ThemeToggle wide />
+          </div>
           <div
             style={{
               padding: 12,
@@ -357,7 +541,7 @@ export default function App() {
           {/* Hero / header strip */}
           <header
             style={{
-              padding: "64px 48px 48px",
+              padding: isMobile ? "36px 20px 28px" : "64px 48px 48px",
               position: "relative",
               overflow: "hidden",
               background: `linear-gradient(135deg, rgba(168,85,247,0.08) 0%, rgba(34,211,238,0.04) 50%, rgba(168,85,247,0.04) 100%)`,
@@ -437,30 +621,47 @@ export default function App() {
               </div>
               <h1
                 style={{
-                  fontSize: 56,
+                  fontSize: isMobile ? 32 : 56,
                   margin: 0,
                   fontWeight: 900,
-                  letterSpacing: -1.5,
-                  lineHeight: 1,
+                  letterSpacing: isMobile ? -0.8 : -1.5,
+                  lineHeight: 1.05,
                   marginBottom: 12,
                   display: "flex",
                   alignItems: "center",
-                  gap: 16,
-                  background:
-                    "linear-gradient(135deg,#ffffff 0%,#e0d9f8 40%,#a5f3fc 100%)",
+                  gap: isMobile ? 10 : 16,
+                  flexWrap: "wrap",
+                  background: "var(--hero-text-grad)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   color: "transparent",
                 }}
               >
-                <span style={{ fontSize: 60 }}>{current.icon}</span>
+                <span
+                  style={{
+                    flexShrink: 0,
+                    width: isMobile ? 48 : 68,
+                    height: isMobile ? 48 : 68,
+                    borderRadius: isMobile ? 14 : 18,
+                    display: "grid",
+                    placeItems: "center",
+                    color: "#fff",
+                    background:
+                      "linear-gradient(135deg,#a855f7 0%,#7c3aed 55%,#22d3ee 100%)",
+                    boxShadow:
+                      "0 10px 30px rgba(168,85,247,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
+                    WebkitTextFillColor: "#fff",
+                  }}
+                >
+                  <Icon name={current.id} size={isMobile ? 26 : 36} strokeWidth={2.2} />
+                </span>
                 {current.label}
               </h1>
               <p
                 style={{
-                  fontSize: 16,
+                  fontSize: isMobile ? 14.5 : 16,
                   color: tokens.textMuted,
-                  margin: "0 0 32px 0",
+                  margin: isMobile ? "0 0 24px 0" : "0 0 32px 0",
                   maxWidth: 700,
                   lineHeight: 1.6,
                 }}
@@ -472,8 +673,10 @@ export default function App() {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-                    gap: 12,
+                    gridTemplateColumns: isMobile
+                      ? "repeat(auto-fit, minmax(100px, 1fr))"
+                      : "repeat(auto-fit, minmax(160px, 1fr))",
+                    gap: isMobile ? 8 : 12,
                     maxWidth: 900,
                   }}
                 >
@@ -495,9 +698,11 @@ export default function App() {
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.background = `linear-gradient(135deg, rgba(168,85,247,${0.15 + i * 0.02}) 0%, rgba(34,211,238,${0.1 + i * 0.01}) 100%)`;
-                        e.currentTarget.style.borderColor = "rgba(168,85,247,0.5)";
+                        e.currentTarget.style.borderColor =
+                          "rgba(168,85,247,0.5)";
                         e.currentTarget.style.transform = "translateY(-4px)";
-                        e.currentTarget.style.boxShadow = "0 12px 32px rgba(168,85,247,0.2)";
+                        e.currentTarget.style.boxShadow =
+                          "0 12px 32px rgba(168,85,247,0.2)";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background = `linear-gradient(135deg, rgba(168,85,247,${0.08 + i * 0.02}) 0%, rgba(34,211,238,${0.04 + i * 0.01}) 100%)`;
@@ -510,8 +715,7 @@ export default function App() {
                         style={{
                           fontSize: 28,
                           fontWeight: 900,
-                          background:
-                            "linear-gradient(135deg,#a855f7,#22d3ee)",
+                          background: "linear-gradient(135deg,#a855f7,#22d3ee)",
                           WebkitBackgroundClip: "text",
                           backgroundClip: "text",
                           color: "transparent",
@@ -539,35 +743,25 @@ export default function App() {
             </div>
           </header>
 
-          <div style={{ padding: "48px 48px 80px" }}>
+          <div
+            style={{ padding: isMobile ? "16px 16px 56px" : "24px 24px 80px" }}
+          >
             {active === "types" && <GettingStarted />}
             <Tab />
           </div>
 
-          {/* <footer
-          style={{
-            borderTop: `1px solid ${tokens.border}`,
-            padding: '20px 48px',
-            color: tokens.textSubtle,
-            fontSize: 12,
-            display: 'flex',
-            gap: 16,
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-          }}
-        >
-          <span>react-qr-master Â· open source, MIT</span>
-          <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-            Generator Â· Scanner Â· Studio Â· Batch Â· Dynamic Â· Analytics
-          </span>
-        </footer> */}
-
           {/* Footer */}
-          <footer style={{ marginTop: 96, marginBottom: 24, padding: "48px 48px 80px" }}>
+          <footer
+            style={{
+              marginTop: isMobile ? 48 : 96,
+              marginBottom: 24,
+              padding: isMobile ? "0 16px 40px" : "48px 48px 80px",
+            }}
+          >
             <div
               style={{
                 position: "relative",
-                borderRadius: 20,
+                borderRadius: isMobile ? 16 : 20,
                 padding: 1,
                 background:
                   "linear-gradient(135deg, rgba(244,114,182,0.55) 0%, rgba(167,139,250,0.15) 40%, rgba(56,189,248,0.55) 100%)",
@@ -575,12 +769,12 @@ export default function App() {
             >
               <div
                 style={{
-                  borderRadius: 19,
+                  borderRadius: isMobile ? 15 : 19,
                   background:
                     "linear-gradient(180deg, rgb(var(--surface-strong-rgb) / 0.85) 0%, rgb(var(--surface-strong-rgb) / 0.95) 100%)",
                   backdropFilter: "blur(14px)",
                   WebkitBackdropFilter: "blur(14px)",
-                  padding: "28px 20px",
+                  padding: isMobile ? "clamp(16px, 5vw, 28px)" : "28px 20px",
                 }}
               >
                 {/* Top row: brand + action buttons */}
@@ -641,7 +835,7 @@ export default function App() {
                         style={{
                           color: "var(--text-primary)",
                           fontWeight: 700,
-                          fontSize: 16,
+                          fontSize: isMobile ? 14 : 16,
                           letterSpacing: "-0.01em",
                         }}
                       >
@@ -650,11 +844,12 @@ export default function App() {
                       <div
                         style={{
                           color: "var(--text-muted)",
-                          fontSize: 13,
+                          fontSize: isMobile ? 11 : 13,
                           marginTop: 2,
                         }}
                       >
-                        Modern, accessible qr code generator component for React & Next.js
+                        Modern, accessible qr code generator component for React
+                        & Next.js
                       </div>
                     </div>
                   </div>
@@ -663,7 +858,7 @@ export default function App() {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 10,
+                      gap: isMobile ? 6 : 10,
                       flexWrap: "wrap",
                     }}
                   >
@@ -674,13 +869,13 @@ export default function App() {
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
-                        gap: 8,
-                        padding: "9px 16px",
+                        gap: isMobile ? 4 : 8,
+                        padding: isMobile ? "6px 12px" : "9px 16px",
                         borderRadius: 999,
                         border: "1px solid rgb(var(--border-rgb) / 0.18)",
                         background: "rgb(var(--surface-rgb) / 0.04)",
                         color: "var(--text-primary)",
-                        fontSize: 13,
+                        fontSize: isMobile ? 11 : 13,
                         fontWeight: 500,
                         textDecoration: "none",
                         transition: "all 0.2s ease",
@@ -763,8 +958,6 @@ export default function App() {
                   </div>
                 </div>
 
-               
-
                 {/* Social card â€” horizontal profile row, wraps on small screens */}
                 <div
                   style={{
@@ -804,7 +997,7 @@ export default function App() {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 14,
+                      gap: isMobile ? 10 : 14,
                       minWidth: 0,
                       flex: "1 1 auto",
                     }}
@@ -814,13 +1007,13 @@ export default function App() {
                       aria-hidden
                       style={{
                         flex: "0 0 auto",
-                        width: 46,
-                        height: 46,
+                        width: isMobile ? 40 : 46,
+                        height: isMobile ? 40 : 46,
                         borderRadius: "50%",
                         display: "inline-flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: 17,
+                        fontSize: isMobile ? 14 : 17,
                         fontWeight: 700,
                         letterSpacing: 0.5,
                         color: "#fff",
@@ -888,8 +1081,6 @@ export default function App() {
                   />
                 </div>
 
-                
-
                 {/* Bottom row: license + credit */}
                 <div
                   style={{
@@ -930,7 +1121,7 @@ export default function App() {
                       <span
                         style={{ color: "var(--text-muted)", fontSize: 13 }}
                       >
-                       · © 2026 react-qr-master
+                        · © 2026 react-qr-master
                       </span>
                     </div>
                     <div style={{ color: "var(--text-muted)", fontSize: 13 }}>
@@ -989,7 +1180,84 @@ export default function App() {
               </div>
             </div>
           </footer>
+
+          {/* Live site stats */}
+          <div style={{ padding: isMobile ? "15px 16px" : "30px 16px" }}>
+            <LiveStats />
+          </div>
         </main>
+
+        {/* Scroll-to-Top Button with Smooth Animation */}
+        <style>{`
+          @keyframes slideUpFadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          @keyframes slideDownFadeOut {
+            from {
+              opacity: 1;
+              transform: translateY(0);
+            }
+            to {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+          }
+          .scroll-to-top-visible {
+            animation: slideUpFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          .scroll-to-top-hidden {
+            animation: slideDownFadeOut 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+        `}</style>
+
+        <button
+          onClick={scrollToTop}
+          className={`${showScrollTop ? "scroll-to-top-visible" : "scroll-to-top-hidden"}`}
+          style={{
+            position: "fixed",
+            bottom: isMobile ? 20 : 32,
+            right: isMobile ? 16 : 32,
+            width: isMobile ? 44 : 52,
+            height: isMobile ? 44 : 52,
+            padding: 0,
+            borderRadius: "50%",
+            border: "none",
+            background: "linear-gradient(135deg, #60a5fa 0%, #a855f7 100%)",
+            color: "white",
+            fontSize: isMobile ? 18 : 20,
+            fontWeight: 700,
+            cursor: "pointer",
+            display: showScrollTop ? "flex" : "none",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow:
+              "0 8px 32px rgba(96, 165, 250, 0.4), 0 0 20px rgba(168, 85, 247, 0.3)",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            backdropFilter: "blur(10px)",
+            zIndex: 45,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.1)";
+            e.currentTarget.style.boxShadow =
+              "0 12px 48px rgba(96, 165, 250, 0.6), 0 0 30px rgba(168, 85, 247, 0.4)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.style.boxShadow =
+              "0 8px 32px rgba(96, 165, 250, 0.4), 0 0 20px rgba(168, 85, 247, 0.3)";
+          }}
+          title="Scroll to top"
+          aria-label="Scroll to top"
+        >
+          ↑
+        </button>
 
         <QRCodeModal
           isOpen={modalOpen}

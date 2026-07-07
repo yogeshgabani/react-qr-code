@@ -1,23 +1,25 @@
 import type { CSSProperties } from 'react';
 
 // ─── Design tokens ──────────────────────────────────────────────────────────
+// Values are CSS variables (defined in index.html) so every inline style that
+// reads a token flips automatically between light / dark themes.
 export const tokens = {
-  bg: '#07070c',
-  bgSoft: '#0d0d15',
-  bgCard: 'rgba(255,255,255,0.04)',
-  bgCardSolid: '#13131c',
-  bgCardHover: 'rgba(255,255,255,0.07)',
-  border: 'rgba(255,255,255,0.08)',
-  borderBright: 'rgba(255,255,255,0.16)',
-  text: '#f0f0f5',
-  textMuted: '#a0a0b0',
-  textSubtle: '#6a6a7a',
-  primary: '#a855f7',
-  primaryDark: '#7c3aed',
-  accent: '#22d3ee',
-  danger: '#f87171',
-  success: '#34d399',
-  warning: '#fbbf24',
+  bg: 'var(--bg)',
+  bgSoft: 'var(--bg-soft)',
+  bgCard: 'var(--bg-card)',
+  bgCardSolid: 'var(--card-solid)',
+  bgCardHover: 'var(--bg-card-hover)',
+  border: 'var(--border)',
+  borderBright: 'var(--border-bright)',
+  text: 'var(--text)',
+  textMuted: 'var(--text-muted)',
+  textSubtle: 'var(--text-subtle)',
+  primary: 'var(--primary)',
+  primaryDark: 'var(--primary-dark)',
+  accent: 'var(--accent)',
+  danger: 'var(--danger)',
+  success: 'var(--success)',
+  warning: 'var(--warning)',
 };
 
 // ─── Card surfaces ──────────────────────────────────────────────────────────
@@ -26,7 +28,7 @@ export const card: CSSProperties = {
   background: '#ffffff',
   borderRadius: 16,
   padding: 18,
-  border: '1px solid rgba(0,0,0,0.04)',
+  border: '1px solid rgba(15,23,42,0.1)',
   boxShadow: '0 1px 3px rgba(0,0,0,0.2), 0 10px 30px -10px rgba(0,0,0,0.4)',
   display: 'flex',
   flexDirection: 'column',
@@ -52,9 +54,9 @@ export const cardDark: CSSProperties = {
 
 export const cardLabel: CSSProperties = {
   fontSize: 11,
-  fontWeight: 600,
+  fontWeight: 700,
   margin: 0,
-  color: '#475569',
+  color: '#334155',
   textAlign: 'center',
   letterSpacing: 0.4,
   textTransform: 'uppercase',

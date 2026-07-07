@@ -1,3 +1,4 @@
+import type { ReactNode, CSSProperties } from 'react';
 import {
   QRCode,
   WebsiteQR,
@@ -20,10 +21,47 @@ import { card, cardLabel, grid, sectionHeading, subtle, tokens } from '../styles
 import { HowToUse, CopyButton } from '../components';
 import { useQRModal } from '../QRModalContext';
 
+// Label truncates cleanly instead of colliding with the "Code" button.
+const typeLabel: CSSProperties = {
+  ...cardLabel,
+  flex: 1,
+  minWidth: 0,
+  textAlign: 'left',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+};
+
+/** QR preview that opens the designer modal on click (with a subtle hover zoom). */
+function QRPreview({ onOpen, children }: { onOpen: () => void; children: ReactNode }) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        placeItems: 'center',
+        flex: 1,
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }}
+      onClick={onOpen}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'scale(1.05)';
+        e.currentTarget.style.filter = 'brightness(1.1)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.filter = 'brightness(1)';
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function TypesTab() {
   const { openQRModal } = useQRModal();
   return (
-    <div>
+    <div style={{ padding: "32px 0px" }}>
       <h2 style={sectionHeading}>16 QR types</h2>
       <p style={subtle}>
         Each is a thin wrapper around <code>&lt;QRCode/&gt;</code> with a payload encoder. Design
@@ -54,11 +92,11 @@ export function TypesTab() {
           },
         ]}
       />
-      <h3 style={{ ...sectionHeading, fontSize: 18, marginTop: 32, marginBottom: 16 }}>Gallery</h3>
+      <h3 style={{ ...sectionHeading, fontSize: 24, marginTop: 32, marginBottom: 32 }}>Gallery</h3>
       <div style={grid}>
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>WebsiteQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>WebsiteQR</p>
             <CopyButton
               text='<WebsiteQR url="acme.com" size={256} />'
               label="Code"
@@ -88,8 +126,8 @@ export function TypesTab() {
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>Opens a URL when scanned</p>
         </div>
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>TextQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>TextQR</p>
             <CopyButton text='<TextQR text="Hello!" size={256} />' label="Code" size="sm" />
           </div>
           <div
@@ -116,8 +154,8 @@ export function TypesTab() {
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>WiFiQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>WiFiQR</p>
             <CopyButton text='<WiFiQR ssid="Network" password="pass" size={256} />' label="Code" size="sm" />
           </div>
           <div
@@ -144,8 +182,8 @@ export function TypesTab() {
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>EmailQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>EmailQR</p>
             <CopyButton text='<EmailQR to="user@example.com" subject="Hi" size={256} />' label="Code" size="sm" />
           </div>
           <div
@@ -172,145 +210,145 @@ export function TypesTab() {
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>PhoneQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>PhoneQR</p>
             <CopyButton text='<PhoneQR phoneNumber="+1 555 123 4567" size={256} />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'tel:+14155552671' }, 'Phone QR')}>
             <PhoneQR phoneNumber="+1 415 555 2671" size={180} />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>Initiate phone call</p>
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>SMSQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>SMSQR</p>
             <CopyButton text='<SMSQR phoneNumber="+1 555 123 4567" message="Hi!" size={256} />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'SMSTO:14155552671:Hey!' }, 'SMS QR')}>
             <SMSQR phoneNumber="14155552671" message="Hey!" size={180} />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>Send SMS message</p>
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>WhatsAppQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>WhatsAppQR</p>
             <CopyButton text='<WhatsAppQR phoneNumber="+1 555 123" message="Hi!" size={256} />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'https://wa.me/14155552671?text=Hi!', cornerStyle: 'rounded', eyeShape: 'rounded' }, 'WhatsApp QR')}>
             <WhatsAppQR phoneNumber="14155552671" message="Hi!" size={180} gradient={{ type: 'linear', colors: ['#25D366', '#128C7E'], rotation: 90 }} cornerStyle="rounded" eyeShape="rounded" />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>WhatsApp message</p>
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>ContactQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>ContactQR</p>
             <CopyButton text='<ContactQR firstName="John" email="john@example.com" size={256} />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'BEGIN:VCARD\nVERSION:3.0\nN:Doe;Jane\nORG:Acme Co\nEMAIL:jane@acme.com\nTEL:+14155552671\nURL:https://acme.com\nEND:VCARD' }, 'Contact QR')}>
             <ContactQR firstName="Jane" lastName="Doe" organization="Acme Co" email="jane@acme.com" mobile="+1 415 555 2671" website="https://acme.com" size={180} />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>vCard contact save</p>
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>GoogleMapsQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>GoogleMapsQR</p>
             <CopyButton text='<GoogleMapsQR query="Eiffel Tower, Paris" size={256} />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'https://www.google.com/maps/search/?api=1&query=Eiffel+Tower,+Paris', shape: 'rounded', cornerStyle: 'rounded' }, 'Google Maps QR')}>
             <GoogleMapsQR query="Eiffel Tower, Paris" size={180} shape="rounded" cornerStyle="rounded" />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>Open Google Maps location</p>
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>LocationQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>LocationQR</p>
             <CopyButton text='<LocationQR latitude={37.7749} longitude={-122.4194} size={256} />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'geo:37.7749,-122.4194' }, 'Location QR')}>
             <LocationQR latitude={37.7749} longitude={-122.4194} query="San Francisco" size={180} />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>geo: URL location</p>
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>EventQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>EventQR</p>
             <CopyButton text='<EventQR title="Conference" start="2026-10-15T09:00Z" size={256} />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'BEGIN:VEVENT\nSUMMARY:React Conf\nDTSTART:20261015T090000Z\nDTEND:20261015T170000Z\nLOCATION:San Francisco\nEND:VEVENT' }, 'Event QR')}>
             <EventQR title="React Conf" start="2026-10-15T09:00:00Z" end="2026-10-15T17:00:00Z" location="San Francisco" size={180} />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>iCal event schedule</p>
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>CalendarQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>CalendarQR</p>
             <CopyButton text='<CalendarQR title="Standup" recurrence="FREQ=WEEKLY" size={256} />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'BEGIN:VEVENT\nSUMMARY:Standup\nDTSTART:20260615T090000Z\nDTEND:20260615T091500Z\nRRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR\nEND:VEVENT' }, 'Calendar QR')}>
             <CalendarQR title="Standup" start="2026-06-15T09:00:00Z" end="2026-06-15T09:15:00Z" recurrence="FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR" size={180} />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>Recurring calendar event</p>
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>UPIQR</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>UPIQR</p>
             <CopyButton text='<UPIQR payeeVPA="merchant@upi" amount="299.00" size={256} />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'upi://pay?pa=merchant@upi&pn=Acme%20Pvt%20Ltd&am=299.00&tn=Order%201234', cornerStyle: 'modern', eyeShape: 'modern' }, 'UPI QR')}>
             <UPIQR payeeVPA="merchant@upi" payeeName="Acme Pvt Ltd" amount="299.00" note="Order #1234" size={180} gradient={{ type: 'radial', colors: ['#10b981', '#064e3b'] }} cornerStyle="modern" eyeShape="modern" />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>UPI payment request</p>
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>CryptoQR · Bitcoin</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>CryptoQR · Bitcoin</p>
             <CopyButton text='<CryptoQR coin="bitcoin" address="bc1qxy..." amount={0.05} size={256} />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh?amount=0.05', fgColor: '#f7931a' }, 'Bitcoin QR')}>
             <CryptoQR coin="bitcoin" address="bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh" amount={0.05} label="Donation" size={180} fgColor="#f7931a" />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>Bitcoin payment</p>
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>CryptoQR · Ethereum</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>CryptoQR · Ethereum</p>
             <CopyButton text='<CryptoQR coin="ethereum" address="0x742d..." amount={1.5} size={256} />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'ethereum:0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb6?value=1.5' }, 'Ethereum QR')}>
             <CryptoQR coin="ethereum" address="0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb6" amount={1.5} size={180} gradient={{ type: 'linear', colors: ['#627eea', '#3c5ad6'], rotation: 45 }} />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>Ethereum payment</p>
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>SocialQR · GitHub</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>SocialQR · GitHub</p>
             <CopyButton text='<SocialQR platform="github" username="anthropics" size={256} />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'https://github.com/anthropics', shape: 'circle' }, 'Social QR')}>
             <SocialQR platform="github" username="anthropics" size={180} shape="circle" />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>Social profile link</p>
         </div>
 
         <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-            <p style={cardLabel}>QRCode · Base</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+            <p style={typeLabel}>QRCode · Base</p>
             <CopyButton text='<QRCode value="https://example.com" size={256} shape="diamond" />' label="Code" size="sm" />
           </div>
-          <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+          <QRPreview onOpen={() => openQRModal({ value: 'https://example.com', shape: 'diamond', cornerStyle: 'rounded', eyeShape: 'rounded', fgColor: '#fbbf24', bgColor: '#0f172a' }, 'QR Code')}>
             <QRCode value="https://example.com" size={180} shape="diamond" cornerStyle="rounded" eyeShape="rounded" fgColor="#fbbf24" bgColor="#0f172a" />
-          </div>
+          </QRPreview>
           <p style={{ fontSize: 11, color: tokens.textSubtle, margin: 0 }}>Raw data encoding</p>
         </div>
       </div>

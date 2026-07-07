@@ -37,31 +37,38 @@ export function renderModule(
   x: number,
   y: number,
   key: string,
+  spacing: number = 0,
 ): ReactNode {
+  // spacing: 0 = no gap (full 1x1), 0.5 = maximum gap (0.5x0.5 center)
+  const gap = Math.max(0, Math.min(spacing, 0.5));
+  const offset = gap / 2;
+  const size = 1 - gap;
+
   const cx = x + 0.5;
   const cy = y + 0.5;
+
   switch (shape) {
     case 'square':
-      return <rect key={key} x={x} y={y} width={1} height={1} />;
+      return <rect key={key} x={x + offset} y={y + offset} width={size} height={size} />;
     case 'rounded':
-      return <rect key={key} x={x} y={y} width={1} height={1} rx={0.25} ry={0.25} />;
+      return <rect key={key} x={x + offset} y={y + offset} width={size} height={size} rx={0.25 * size} ry={0.25 * size} />;
     case 'extra-rounded':
-      return <rect key={key} x={x} y={y} width={1} height={1} rx={0.45} ry={0.45} />;
+      return <rect key={key} x={x + offset} y={y + offset} width={size} height={size} rx={0.45 * size} ry={0.45 * size} />;
     case 'circle':
-      return <circle key={key} cx={cx} cy={cy} r={0.5} />;
+      return <circle key={key} cx={cx} cy={cy} r={0.5 * size} />;
     case 'dot':
-      return <circle key={key} cx={cx} cy={cy} r={0.4} />;
+      return <circle key={key} cx={cx} cy={cy} r={0.4 * size} />;
     case 'diamond':
       return (
         <polygon
           key={key}
-          points={`${cx},${y} ${x + 1},${cy} ${cx},${y + 1} ${x},${cy}`}
+          points={`${cx},${y + offset} ${x + 1 - offset},${cy} ${cx},${y + 1 - offset} ${x + offset},${cy}`}
         />
       );
     case 'hexagon':
-      return <polygon key={key} points={hexagonPoints(cx, cy, 0.55)} />;
+      return <polygon key={key} points={hexagonPoints(cx, cy, 0.55 * size)} />;
     case 'star':
-      return <polygon key={key} points={starPoints(cx, cy, 0.55, 0.24)} />;
+      return <polygon key={key} points={starPoints(cx, cy, 0.55 * size, 0.24 * size)} />;
   }
 }
 
