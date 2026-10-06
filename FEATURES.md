@@ -1,684 +1,511 @@
-# React QR Master - Complete Features Guide
+# React QR Master: API Reference
 
-This guide shows you how to use all the features available in react-qr-master, exactly as they appear in the live playground.
+Every component, hook and utility exported by `react-qr-master`, with its real props. All examples on this page are type-checked against the source on every release (`npm run check:docs`), so they stay in sync with the code.
 
-## 16 Built-in QR Types
+- [QRCode](#qrcode): the core component
+- [Specialised QR types](#specialised-qr-types): WiFi, vCard, UPI, WhatsApp, events and more
+- [Download, copy, share, verify](#download-copy-share-verify)
+- [Scanner](#qrscanner)
+- [Studio](#qrstudio), [Batch](#qrbatchgenerator), [Dynamic QR](#dynamicqrcode)
+- [Hooks](#hooks)
+- [Themes, templates, animations](#themes-templates-animations)
+- [Headless utilities](#headless-utilities)
 
-### 1. Website QR
-```tsx
-import { WebsiteQR } from 'react-qr-master';
+---
 
-<WebsiteQR url="https://example.com" size={256} />
-```
+## QRCode
 
-### 2. Text QR
-```tsx
-import { TextQR } from 'react-qr-master';
-
-<TextQR text="Hello World" size={256} />
-```
-
-### 3. WiFi QR
-```tsx
-import { WiFiQR } from 'react-qr-master';
-
-<WiFiQR ssid="Network" password="pass123" security="WPA" size={256} />
-```
-
-### 4. Email QR
-```tsx
-import { EmailQR } from 'react-qr-master';
-
-<EmailQR email="user@example.com" subject="Hello" body="Message" size={256} />
-```
-
-### 5. Phone QR
-```tsx
-import { PhoneQR } from 'react-qr-master';
-
-<PhoneQR phone="+1234567890" size={256} />
-```
-
-### 6. SMS QR
-```tsx
-import { SMSQR } from 'react-qr-master';
-
-<SMSQR phone="+1234567890" message="Hello" size={256} />
-```
-
-### 7. WhatsApp QR
-```tsx
-import { WhatsAppQR } from 'react-qr-master';
-
-<WhatsAppQR phone="+1234567890" message="Hello" size={256} />
-```
-
-### 8. Contact QR
-```tsx
-import { ContactQR } from 'react-qr-master';
-
-<ContactQR
-  name="John Doe"
-  email="john@example.com"
-  phone="+1234567890"
-  organization="Acme"
-  size={256}
-/>
-```
-
-### 9. Google Maps QR
-```tsx
-import { GoogleMapsQR } from 'react-qr-master';
-
-<GoogleMapsQR lat={40.7128} lng={-74.0060} zoom={15} size={256} />
-```
-
-### 10. Location QR
-```tsx
-import { LocationQR } from 'react-qr-master';
-
-<LocationQR lat={40.7128} lng={-74.0060} altitude={0} size={256} />
-```
-
-### 11. Event QR
-```tsx
-import { EventQR } from 'react-qr-master';
-
-<EventQR
-  title="Conference"
-  startDate="2024-06-15"
-  startTime="10:00"
-  location="Hall A"
-  size={256}
-/>
-```
-
-### 12. Calendar QR
-```tsx
-import { CalendarQR } from 'react-qr-master';
-
-<CalendarQR
-  title="Meeting"
-  startDate="2024-06-15"
-  startTime="14:30"
-  endDate="2024-06-15"
-  endTime="15:30"
-  location="Room 101"
-  size={256}
-/>
-```
-
-### 13. UPI QR
-```tsx
-import { UPIQR } from 'react-qr-master';
-
-<UPIQR upiId="user@bank" payeeName="John" amount={100} size={256} />
-```
-
-### 14. Crypto QR
-```tsx
-import { CryptoQR } from 'react-qr-master';
-
-<CryptoQR coin="bitcoin" address="1A1z7agoat..." size={256} />
-```
-
-### 15. Social QR
-```tsx
-import { SocialQR } from 'react-qr-master';
-
-<SocialQR platform="twitter" handle="@username" size={256} />
-```
-
-### 16. Generic QR
 ```tsx
 import { QRCode } from 'react-qr-master';
 
-<QRCode value="Any text or URL" size={256} />
+<QRCode value="https://example.com" size={256} />
 ```
 
-## Core QRCode Component with All Styling Options
+Renders an `<svg>`. The ref is forwarded to that `<svg>` element.
 
-### Full-Featured Example
+### Content and size
+
+| Prop     | Type                       | Default | Description                                                                                      |
+| -------- | -------------------------- | ------- | ------------------------------------------------------------------------------------------------ |
+| `value`  | `string`                   | —       | **Required.** Text to encode. Any UTF-8 text works, including Hindi, emoji and other scripts.     |
+| `size`   | `number`                   | `256`   | Width and height in px.                                                                          |
+| `margin` | `number`                   | `4`     | Quiet zone in modules. Keep at least 4 for reliable scanning.                                    |
+| `level`  | `'L' \| 'M' \| 'Q' \| 'H'` | `'M'`   | Error correction (~7 / 15 / 25 / 30 % recovery). Becomes `'H'` automatically when a `logo` is set. |
+
+### Design
+
+| Prop            | Type                                                                                              | Default    | Description                                     |
+| --------------- | ------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------- |
+| `fgColor`       | `string`                                                                                          | `#000000`  | Module colour.                                  |
+| `bgColor`       | `string`                                                                                          | `#ffffff`  | Background colour.                              |
+| `shape`         | `'square' \| 'rounded' \| 'extra-rounded' \| 'circle' \| 'dot' \| 'diamond' \| 'hexagon' \| 'star'` | `'square'` | Data-module shape.                              |
+| `cornerStyle`   | `'square' \| 'rounded' \| 'soft-rounded' \| 'circle' \| 'modern'`                                 | `'square'` | Outer ring of the three finder "eyes".          |
+| `eyeShape`      | `'square' \| 'rounded' \| 'circle' \| 'diamond' \| 'modern'`                                      | `'square'` | Inner pupil of the eyes.                        |
+| `eyeColor`      | `string`                                                                                          | `fgColor`  | Separate colour for the eyes.                   |
+| `gradient`      | `{ type: 'linear' \| 'radial' \| 'conic'; colors: string[]; rotation?: number }`                  | —          | Gradient fill for the modules.                  |
+| `moduleSpacing` | `number` (0–0.5)                                                                                  | `0`        | Gap between modules, as a fraction of a module. |
+| `theme`         | `QRThemeName`                                                                                     | —          | Preset; any prop you pass overrides it.         |
+| `animation`     | `QRAnimation`                                                                                     | —          | CSS animation embedded in the SVG.              |
+| `frame`         | `'square' \| 'rounded'`                                                                           | `'square'` | Rounds the background corners.                  |
+
 ```tsx
-import { QRCode, THEMES } from 'react-qr-master';
-
 <QRCode
   value="https://example.com"
   size={300}
-  level="H"  // Error correction: L, M, Q, H
-  shape="rounded"  // square, rounded, extra-rounded, circle, dot, diamond, hexagon, star
-  cornerStyle="modern"  // square, rounded, soft-rounded, circle, modern
-  eyeShape="modern"  // square, rounded, circle, diamond, modern
-  fgColor="#000000"
-  bgColor="#ffffff"
-  moduleSpacing={0.1}  // 0-0.5, creates gaps between modules
-  theme="neon"  // or use a custom theme
+  shape="dot"
+  cornerStyle="rounded"
+  eyeShape="circle"
+  eyeColor="#111827"
+  gradient={{ type: 'linear', colors: ['#4f46e5', '#db2777'], rotation: 45 }}
+  moduleSpacing={0.1}
 />
 ```
 
-## Module Shapes
-Create unique QR codes with different module designs:
+### Logo
+
+| Prop              | Type                                                  | Default        | Description                                                                                    |
+| ----------------- | ----------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------- |
+| `logo`            | `string`                                              | —              | Image URL or data URI (PNG, SVG, JPG, WEBP).                                                   |
+| `logoSize`        | `number`                                              | `0.2`          | Fraction of the QR width. Capped at a safe size for the error-correction level (H: 0.3).        |
+| `logoPadding`     | `number`                                              | `1`            | Clear space around the logo, in modules.                                                       |
+| `logoShape`       | `'square' \| 'rounded' \| 'circle'`                   | `'square'`     | Clip shape of the logo.                                                                        |
+| `logoMode`        | `'foreground' \| 'embedded' \| 'background'`          | `'foreground'` | `foreground` puts a box behind the logo, `embedded` has no box, `background` fills the whole QR. |
+| `logoPosition`    | `'center' \| 'top' \| 'bottom' \| 'left' \| 'right'`  | `'center'`     | Placement; ignored in `background` mode.                                                       |
+| `logoBorderColor` | `string`                                              | —              | Border around the logo box.                                                                    |
+| `logoBorderWidth` | `number`                                              | `0.5`          | Border width in modules.                                                                       |
 
 ```tsx
-const shapes = [
-  'square',
-  'rounded',
-  'extra-rounded',
-  'circle',
-  'dot',
-  'diamond',
-  'hexagon',
-  'star',
-];
-
-shapes.map(shape => (
-  <QRCode
-    key={shape}
-    value="https://example.com"
-    shape={shape}
-    size={200}
-  />
-));
+<QRCode value="https://example.com" logo="/logo.png" logoSize={0.22} logoShape="circle" />
 ```
 
-## Corner Styles
-Customize the finder pattern (corner) appearance:
+### DOM
+
+`className`, `style`, `id`, and `title`. `title` also sets the accessible name; without it the SVG is labelled "QR code for {value}".
+
+---
+
+## Specialised QR types
+
+Each component builds the correct payload format for its type and accepts **every `QRCode` prop** except `value` (and `title` on `ContactQR`, `EventQR` and `CalendarQR`, where it's part of the data). The matching `encode*` functions return the raw string if you want it without React (see [Headless utilities](#headless-utilities)).
+
+### WebsiteQR
 
 ```tsx
-const cornerStyles = [
-  'square',
-  'rounded',
-  'soft-rounded',
-  'circle',
-  'modern',
-];
-
-cornerStyles.map(style => (
-  <QRCode
-    key={style}
-    value="https://example.com"
-    cornerStyle={style}
-    size={200}
-  />
-));
+<WebsiteQR url="example.com/menu" size={256} />
 ```
 
-## Eye Shapes
-Customize the inner part of finder patterns:
+`url`: `https://` is added when the scheme is missing.
+
+### TextQR
 
 ```tsx
-const eyeShapes = [
-  'square',
-  'rounded',
-  'circle',
-  'diamond',
-  'modern',
-];
-
-eyeShapes.map(shape => (
-  <QRCode
-    key={shape}
-    value="https://example.com"
-    eyeShape={shape}
-    size={200}
-  />
-));
+<TextQR text="Hello world" />
 ```
 
-## Module Spacing
-Create visually separated modules:
+### WiFiQR
+
+Scanning joins the network.
 
 ```tsx
-<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
-  <div>
-    <p>No spacing (0)</p>
-    <QRCode value="https://example.com" moduleSpacing={0} size={200} />
-  </div>
-  <div>
-    <p>Medium (0.25)</p>
-    <QRCode value="https://example.com" moduleSpacing={0.25} size={200} />
-  </div>
-  <div>
-    <p>Maximum (0.5)</p>
-    <QRCode value="https://example.com" moduleSpacing={0.5} size={200} />
-  </div>
-</div>
+<WiFiQR ssid="HomeNetwork" password="secret123" encryption="WPA2" />
 ```
 
-## 10 Professional Themes
+| Prop         | Type                                              | Default |
+| ------------ | ------------------------------------------------- | ------- |
+| `ssid`       | `string`                                          | —       |
+| `password`   | `string`                                          | —       |
+| `encryption` | `'WPA' \| 'WPA2' \| 'WPA3' \| 'WEP' \| 'nopass'` | `'WPA'` |
+| `hidden`     | `boolean`                                         | `false` |
 
-### Available Themes
+### EmailQR
+
 ```tsx
-import { THEMES } from 'react-qr-master';
-
-// Light: Clean white background with dark modules
-<QRCode value="..." theme="light" size={200} />
-
-// Dark: Dark background with light modules
-<QRCode value="..." theme="dark" size={200} />
-
-// Neon: Cyan modules on dark purple with glow animation
-<QRCode value="..." theme="neon" size={200} />
-
-// Corporate: Professional blue and red styling
-<QRCode value="..." theme="corporate" size={200} />
-
-// Glassmorphism: Frosted glass effect with indigo accents
-<QRCode value="..." theme="glassmorphism" size={200} />
-
-// Gradient: Purple to pink gradient modules
-<QRCode value="..." theme="gradient" size={200} />
-
-// Modern: Clean rounded corners with dark text
-<QRCode value="..." theme="modern" size={200} />
-
-// Minimal: Minimalist dot design
-<QRCode value="..." theme="minimal" size={200} />
-
-// Cyberpunk: Yellow and magenta neon with star shapes
-<QRCode value="..." theme="cyberpunk" size={200} />
-
-// Premium: Gold and dark luxury styling with hexagons
-<QRCode value="..." theme="premium" size={200} />
+<EmailQR to="hello@acme.com" subject="Order #42" body="Hi there," />
 ```
 
-## Custom Themes
-```tsx
-import { QRCode } from 'react-qr-master';
+Props: `to` (required), `subject`, `body`, `cc`, `bcc`.
 
-<QRCode
-  value="https://example.com"
-  fgColor="#667eea"
-  bgColor="#ffffff"
-  shape="hexagon"
-  cornerStyle="modern"
-  eyeShape="modern"
-  gradient={{
-    type: 'linear',
-    colors: ['#667eea', '#764ba2'],
-    rotation: 135,
-  }}
-  size={250}
+### PhoneQR, SMSQR, WhatsAppQR
+
+```tsx
+<>
+  <PhoneQR phoneNumber="+1 415 555 2671" />
+  <SMSQR phoneNumber="+14155552671" message="I'd like a quote" />
+  <WhatsAppQR phoneNumber="14155552671" message="Hi! I saw your ad." />
+</>
+```
+
+For `WhatsAppQR`, use the country code without `+`; non-digits are stripped.
+
+### ContactQR (vCard 3.0)
+
+Scanning offers to save the contact.
+
+```tsx
+<ContactQR
+  firstName="Jane"
+  lastName="Doe"
+  organization="Acme"
+  title="CTO"
+  mobile="+1 415 555 2671"
+  email="jane@acme.com"
+  website="https://acme.com"
+  address={{ street: '1 Main St', city: 'Springfield', postalCode: '12345', country: 'USA' }}
 />
 ```
 
-## Animations
-Apply smooth animations to your QR codes:
+Props: `firstName`, `lastName`, `fullName`, `organization`, `title`, `phone`, `mobile`, `workPhone`, `email`, `website`, `address` (`street`, `city`, `region`, `postalCode`, `country`), `note`.
+
+### GoogleMapsQR and LocationQR
 
 ```tsx
-import { QRCode } from 'react-qr-master';
+<>
+  <GoogleMapsQR query="Eiffel Tower, Paris" />
+  <GoogleMapsQR latitude={48.8584} longitude={2.2945} />
+  <LocationQR latitude={48.8584} longitude={2.2945} query="Eiffel Tower" />
+</>
+```
 
-const animations = [
-  'pulse',      // Gentle scale pulse
-  'zoom',       // Larger zoom in and out
-  'bounce',     // Vertical bounce effect
-  'rotate',     // 360 degree rotation
-  'fade',       // Opacity fade in and out
-  'wave',       // Horizontal skew wave
-  'glow',       // Drop shadow glow effect
-  'breathing',  // Subtle breathing animation
-  'scan',       // Scanning line effect
-];
+`GoogleMapsQR` opens Google Maps (pass `query` or `latitude` + `longitude`). `LocationQR` writes a standard `geo:` URI that any maps app can open; it also takes `accuracy` in metres.
 
-animations.map(anim => (
-  <QRCode
-    key={anim}
-    value="https://example.com"
-    animation={anim}
-    size={200}
+### EventQR and CalendarQR (iCalendar)
+
+```tsx
+<>
+  <EventQR
+    title="Launch party"
+    start="2026-11-20T18:00:00+05:30"
+    end="2026-11-20T21:00:00+05:30"
+    location="Hall A"
   />
-));
+  <CalendarQR title="Stand-up" start={new Date('2026-11-02T09:30:00Z')} recurrence="FREQ=WEEKLY;BYDAY=MO,WE,FR" />
+</>
 ```
 
-## Error Correction Levels
-Higher error correction allows QR to be scanned even if partially damaged:
+Props: `title`, `start` (`Date` or ISO string), `end` (default: start + 1 h), `allDay`, `location`, `description`, `url`, `organizer`. `CalendarQR` adds `recurrence` (an iCal RRULE).
+
+### UPIQR (India)
+
+Opens GPay, PhonePe, Paytm, BHIM and other UPI apps with the payment pre-filled.
 
 ```tsx
-// L: ~7% error correction (smallest size)
-<QRCode value="..." level="L" />
-
-// M: ~15% error correction (default, balanced)
-<QRCode value="..." level="M" />
-
-// Q: ~25% error correction
-<QRCode value="..." level="Q" />
-
-// H: ~30% error correction (largest size, most robust)
-<QRCode value="..." level="H" />
+<UPIQR payeeVPA="shop@okhdfc" payeeName="Ravi Stores" amount="249.00" note="Order 42" />
 ```
 
-## Download Utilities
-Export QR codes in multiple formats:
+Props: `payeeVPA`, `payeeName`, `amount`, `note`, `transactionRef`, `merchantCode`, `currency` (default `'INR'`).
+
+### CryptoQR
 
 ```tsx
-import { useQRDownload } from 'react-qr-master';
+<>
+  <CryptoQR coin="bitcoin" address="bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh" amount="0.001" />
+  <CryptoQR coin="usdt" address="0xRecipient" tokenAddress="0xdAC17F958D2ee523a2206206994597C13D831ec7" amount={25} />
+</>
+```
 
-function MyComponent() {
-  const { downloadPNG, downloadSVG, downloadPDF } = useQRDownload();
+`coin`: `'bitcoin'` (BIP21), `'ethereum'`, `'polygon'` (EIP-681), `'solana'` (Solana Pay), `'usdt'` (ERC-20 transfer; `tokenAddress` required). Also `amount`, `label`, `message`.
+
+### SocialQR
+
+```tsx
+<SocialQR platform="instagram" username="@acme" />
+```
+
+`platform`: `'facebook' | 'instagram' | 'linkedin' | 'x' | 'twitter' | 'youtube' | 'tiktok' | 'github' | 'discord'`. `username` can also be a full URL.
+
+---
+
+## Download, copy, share, verify
+
+`useQRDownload()` returns a `ref` for the QR and actions that use it.
+
+```tsx
+import { QRCode, useQRDownload } from 'react-qr-master';
+
+function ShareableQR() {
+  const { ref, download, copy, share, verify } = useQRDownload();
 
   return (
     <>
-      <button onClick={() => downloadPNG('qr-code', 300)}>
-        Download PNG
-      </button>
-      <button onClick={() => downloadSVG('qr-code', 300)}>
-        Download SVG
-      </button>
-      <button onClick={() => downloadPDF('qr-code', 300)}>
-        Download PDF
+      <QRCode ref={ref} value="https://example.com" size={256} />
+      <button onClick={() => download('png', { pixelSize: 1024 })}>PNG</button>
+      <button onClick={() => download('pdf', { filename: 'menu-qr.pdf' })}>PDF</button>
+      <button onClick={() => copy()}>Copy image</button>
+      <button onClick={() => share({ title: 'Our menu' })}>Share</button>
+      <button
+        onClick={async () => {
+          const result = await verify({ expected: 'https://example.com' });
+          alert(result.ok ? `Scans fine (score ${result.score})` : result.warnings.join('\n'));
+        }}
+      >
+        Check it scans
       </button>
     </>
   );
 }
 ```
 
-## QRStudio - Interactive Designer
-Build QR codes with a complete UI:
+| Action                       | Description                                                                                                                                     |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `download(format, options?)` | `format`: `'svg' \| 'png' \| 'jpg' \| 'jpeg' \| 'webp' \| 'pdf'`. Options: `filename`, `pixelSize` (default 1024), `quality` (0–1, JPG/WEBP). PDFs are lossless in modern browsers. |
+| `copy(options?)`             | Copies a PNG to the clipboard. Call it from a click handler.                                                                                    |
+| `share(options?)`            | Opens the native share sheet (mostly mobile). Resolves `false` if sharing is unsupported or the user cancels. Options: `filename`, `pixelSize`, `title`, `text`. |
+| `verify(options?)`           | Decodes the rendered QR to check it really scans. See below.                                                                                    |
+
+The same functions exist standalone for any `<svg>` element: `downloadQR(svg, format, options)`, `copyQR(svg)`, `shareQR(svg, options)`, `canShareQR()` and `verifyQR(svg, options)`.
+
+### verifyQR: does it actually scan?
+
+Styling can produce a QR that looks great and doesn't scan: low contrast, a big logo, wide module spacing, light-on-dark colours. `verify` renders the QR at three sizes, each sharp and with two levels of simulated camera blur, decodes every view, and reports:
+
+| Field      | Type              | Meaning                                                                                       |
+| ---------- | ----------------- | --------------------------------------------------------------------------------------------- |
+| `ok`       | `boolean`         | Decodes with normal colours, and equals `expected` if you passed one.                         |
+| `data`     | `string \| null`  | The decoded text.                                                                             |
+| `matches`  | `boolean \| null` | `data === expected`, or `null` without `expected`.                                            |
+| `score`    | `number`          | Share of views (0–1) that decoded. Plain codes score about 0.9–1; under 0.5 is fragile.        |
+| `inverted` | `boolean`         | Decodes only with colours inverted. Recent phone cameras read these, but some scanner apps don't. |
+| `warnings` | `string[]`        | What to fix.                                                                                  |
+
+The decoder is lazy-loaded the first time you call `verify` or mount `QRScanner`, so it costs nothing until then.
+
+---
+
+## QRScanner
+
+Camera scanner (uses the rear camera on phones).
 
 ```tsx
-import { QRStudio } from 'react-qr-master';
+import { useRef } from 'react';
+import { QRScanner, type QRScannerHandle } from 'react-qr-master';
 
-<QRStudio
-  initialValue="https://example.com"
-  onCodeGenerated={(props) => console.log(props)}
-/>
-```
-
-## QRScanner - Scan QR Codes
-Add scanning functionality with camera support:
-
-```tsx
-import { QRScanner } from 'react-qr-master';
-
-<QRScanner
-  onScan={(result) => console.log('Scanned:', result)}
-  onError={(error) => console.error(error)}
-/>
-```
-
-## Batch Generator
-Create multiple QR codes at once:
-
-```tsx
-import { QRBatchGenerator } from 'react-qr-master';
-
-const data = [
-  { url: 'https://example1.com', name: 'QR1' },
-  { url: 'https://example2.com', name: 'QR2' },
-];
-
-<QRBatchGenerator
-  data={data}
-  onGenerated={(codes) => console.log(codes)}
-/>
-```
-
-## Dynamic QR
-Create QR codes that update links without changing the code:
-
-```tsx
-import { DynamicQRCode } from 'react-qr-master';
-
-<DynamicQRCode
-  shortCode="abc123"
-  targetUrl="https://example.com"
-  expiresAt={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
-/>
-```
-
-## Complete Real-World Example
-
-```tsx
-import React, { useState } from 'react';
-import {
-  QRCode,
-  WebsiteQR,
-  THEMES,
-  useQRDownload,
-} from 'react-qr-master';
-
-export function QRCodeGenerator() {
-  const [url, setUrl] = useState('https://example.com');
-  const [size, setSize] = useState(250);
-  const [theme, setTheme] = useState('modern');
-  const [shape, setShape] = useState('rounded');
-  const [moduleSpacing, setModuleSpacing] = useState(0);
-  const { downloadPNG, downloadSVG, downloadPDF } = useQRDownload();
-
+function Scan() {
+  const scanner = useRef<QRScannerHandle>(null);
   return (
-    <div style={{ padding: 40 }}>
-      <h1>QR Code Generator</h1>
+    <>
+      <QRScanner
+        ref={scanner}
+        onScan={(result) => console.log(result.data)}
+        onError={(error) => console.error(error)}
+        pauseOnScan
+      />
+      <button onClick={() => scanner.current?.toggleTorch()}>Torch</button>
+      <button onClick={() => scanner.current?.resume()}>Scan again</button>
+    </>
+  );
+}
+```
 
-      <div style={{ marginBottom: 20 }}>
-        <input
-          type="text"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="Enter URL"
-          style={{ padding: 8, width: 300, marginRight: 10 }}
-        />
-      </div>
+| Prop            | Type                       | Default         | Description                                |
+| --------------- | -------------------------- | --------------- | ------------------------------------------ |
+| `onScan`        | `(result) => void`         | —               | Receives `{ data, timestamp }`.            |
+| `onError`       | `(error: Error) => void`   | —               | Camera permission or device errors.        |
+| `facingMode`    | `'user' \| 'environment'`  | `'environment'` | Which camera to use.                       |
+| `deduplicate`   | `boolean`                  | `true`          | Ignore repeated scans of the same value.   |
+| `pauseOnScan`   | `boolean`                  | `false`         | Stop after the first successful read.      |
+| `showOverlay`   | `boolean`                  | `true`          | Framing reticle and scan line.             |
+| `overlayColor`  | `string`                   | `#22d3ee`       | Reticle colour.                            |
+| `width`, `height` | `number \| string`       | `'100%'`, `320` | Viewport size.                             |
 
-      <div style={{ marginBottom: 20 }}>
-        <label>Size: {size}px</label>
-        <input
-          type="range"
-          min="120"
-          max="600"
-          value={size}
-          onChange={(e) => setSize(parseInt(e.target.value))}
-          style={{ width: 300 }}
-        />
-      </div>
+Ref methods: `pause()`, `resume()`, `toggleTorch()` (resolves the new torch state; Android Chrome), `isTorchOn()`.
 
-      <div style={{ marginBottom: 20 }}>
-        <label>Theme:</label>
-        <select
-          value={theme}
-          onChange={(e) => setTheme(e.target.value)}
-          style={{ padding: 6, marginLeft: 10 }}
-        >
-          {Object.keys(THEMES).map((t) => (
-            <option key={t} value={t}>
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </option>
-          ))}
-        </select>
-      </div>
+Camera access needs HTTPS (or `localhost`).
 
-      <div style={{ marginBottom: 20 }}>
-        <label>Module Shape:</label>
-        <select
-          value={shape}
-          onChange={(e) => setShape(e.target.value)}
-          style={{ padding: 6, marginLeft: 10 }}
-        >
-          {['square', 'rounded', 'circle', 'diamond', 'hexagon', 'star'].map(
-            (s) => (
-              <option key={s} value={s}>
-                {s.charAt(0).toUpperCase() + s.slice(1)}
-              </option>
-            ),
-          )}
-        </select>
-      </div>
+---
 
-      <div style={{ marginBottom: 20 }}>
-        <label>Module Spacing: {(moduleSpacing * 100).toFixed(0)}%</label>
-        <input
-          type="range"
-          min="0"
-          max="0.5"
-          step="0.05"
-          value={moduleSpacing}
-          onChange={(e) => setModuleSpacing(parseFloat(e.target.value))}
-          style={{ width: 300 }}
-        />
-      </div>
+## QRStudio
 
-      <div
-        style={{
-          padding: 30,
-          backgroundColor: '#f5f5f5',
-          borderRadius: 12,
-          marginBottom: 20,
-          textAlign: 'center',
-        }}
-      >
-        <QRCode
-          value={url}
-          size={size}
-          theme={theme as any}
-          shape={shape as any}
-          moduleSpacing={moduleSpacing}
-        />
-      </div>
+A complete QR designer UI (content, design, colours, branding tabs) to drop into an app.
 
-      <div style={{ display: 'flex', gap: 10 }}>
-        <button
-          onClick={() => downloadPNG('qr-code', size)}
-          style={{
-            padding: '10px 20px',
-            background: '#3b82f6',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-          }}
-        >
-          Download PNG
-        </button>
-        <button
-          onClick={() => downloadSVG('qr-code', size)}
-          style={{
-            padding: '10px 20px',
-            background: '#10b981',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-          }}
-        >
-          Download SVG
-        </button>
-        <button
-          onClick={() => downloadPDF('qr-code', size)}
-          style={{
-            padding: '10px 20px',
-            background: '#f59e0b',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-          }}
-        >
-          Download PDF
-        </button>
-      </div>
+```tsx
+<QRStudio initialValue="https://example.com" />
+```
+
+Props: `initialValue`, `className`, `style`.
+
+---
+
+## QRBatchGenerator
+
+Import rows from CSV or JSON, preview them, and export every QR as a ZIP of PNGs or an A4 PDF sheet (12 per page, labelled).
+
+```tsx
+<QRBatchGenerator
+  initialRows={[
+    { id: 'table-1', value: 'https://example.com/t/1', label: 'Table 1' },
+    { id: 'table-2', value: 'https://example.com/t/2', label: 'Table 2' },
+  ]}
+  qrOptions={{ shape: 'rounded', fgColor: '#111827' }}
+  exportPixelSize={1024}
+/>
+```
+
+CSV needs a header row with a `value` column (or `url` / `text`); `id` and `label` are optional. Comma, semicolon, tab and pipe delimiters are detected automatically. JSON is an array of strings or `{ id?, value, label? }` objects.
+
+---
+
+## DynamicQRCode
+
+A QR whose target you can change after it's shown, with optional expiry and scan limit.
+
+```tsx
+<DynamicQRCode
+  id="promo-2026"
+  initialValue="https://example.com/landing"
+  maxScans={1000}
+  expiresAt="2026-12-31"
+  fallback={<p>This offer has ended.</p>}
+/>
+```
+
+State lives in the browser's `localStorage`. To change where a printed QR points, encode a URL on your own server and redirect from there.
+
+---
+
+## Hooks
+
+### useQRDownload
+
+See [Download, copy, share, verify](#download-copy-share-verify).
+
+### useQRGenerator
+
+Returns the raw module matrix for custom renderers (canvas, React Native, terminal).
+
+```tsx
+function AsciiQR() {
+  const { modules } = useQRGenerator('https://example.com', 'M');
+  return <pre>{modules.map((row) => row.map((dark) => (dark ? '██' : '  ')).join('')).join('\n')}</pre>;
+}
+```
+
+### useDynamicQR
+
+```tsx
+function Promo() {
+  const { value, setValue, recordScan, reset, scanCount, expired, overUsed } = useDynamicQR({
+    id: 'promo-2026',
+    initialValue: 'https://example.com/landing',
+    maxScans: 1000,
+    expiresAt: '2026-12-31',
+  });
+  if (expired || overUsed) return <button onClick={reset}>Reset</button>;
+  return (
+    <div onClick={recordScan}>
+      <QRCode value={value} />
+      <input value={value} onChange={(e) => setValue(e.target.value)} />
+      <p>{scanCount} scans</p>
     </div>
   );
 }
 ```
 
-## Advanced Features
+### useBatchQR
 
-### Getting Animation CSS
-If you need to manually apply animations:
-
-```tsx
-import { getAnimationCSS } from 'react-qr-master';
-
-const pulseCSS = getAnimationCSS('pulse');
-console.log(pulseCSS); // Returns keyframes and class
-```
-
-### Color Gradients
-Apply gradient colors to modules:
+Headless version of the batch generator's import logic.
 
 ```tsx
-<QRCode
-  value="https://example.com"
-  gradient={{
-    type: 'linear',
-    colors: ['#667eea', '#764ba2', '#f093fb'],
-    rotation: 135,
-  }}
-  size={250}
-/>
+function Batch() {
+  const { rows, importCSV, importJSON, clear, error } = useBatchQR();
+  return (
+    <>
+      <textarea onBlur={(e) => importCSV(e.target.value)} placeholder="value,label" />
+      <button onClick={() => importJSON('["https://a.com", "https://b.com"]')}>Load sample</button>
+      <button onClick={clear}>Clear</button>
+      {error && <p>{error}</p>}
+      {rows.map((r) => (
+        <QRCode key={r.id} value={r.value} size={96} />
+      ))}
+    </>
+  );
+}
 ```
 
-## Export All Components & Utilities
+### useQRAnalytics
 
-The library exports everything you need:
+Records scan events (device, browser, OS, time) in `localStorage` and summarises them. Useful for demos and QA. For production numbers, send events to your own server.
 
 ```tsx
-// Components
-import {
-  QRCode,
-  WebsiteQR,
-  TextQR,
-  WiFiQR,
-  EmailQR,
-  PhoneQR,
-  SMSQR,
-  WhatsAppQR,
-  ContactQR,
-  GoogleMapsQR,
-  LocationQR,
-  EventQR,
-  CalendarQR,
-  UPIQR,
-  CryptoQR,
-  SocialQR,
-  QRScanner,
-  QRStudio,
-  QRBatchGenerator,
-  DynamicQRCode,
-} from 'react-qr-master';
-
-// Hooks
-import {
-  useQRDownload,
-  useQRGenerator,
-  useDynamicQR,
-  useBatchQR,
-  useQRAnalytics,
-} from 'react-qr-master';
-
-// Utilities
-import {
-  downloadQR,
-  THEMES,
-  TEMPLATES,
-  getAnimationCSS,
-} from 'react-qr-master';
-
-// Types
-import type {
-  QRCodeProps,
-  QRTheme,
-  QRAnimation,
-  QRTemplate,
-} from 'react-qr-master';
+function Stats() {
+  const { summary, track, clear } = useQRAnalytics();
+  return (
+    <>
+      <button onClick={() => track('promo-2026', 'https://example.com')}>Simulate scan</button>
+      <p>
+        {summary.totalScans} scans, {summary.uniqueScans} unique
+      </p>
+      <button onClick={clear}>Reset</button>
+    </>
+  );
+}
 ```
-
-## Tips & Best Practices
-
-1. **Module Spacing**: Use 0.1-0.2 for subtle gaps, 0.3+ for dramatic effect
-2. **Error Correction**: Use "H" for small QR codes that might be damaged
-3. **Themes**: Cyberpunk and Premium themes work great for modern designs
-4. **Animations**: Keep animations subtle in production (pulse, breathing, fade)
-5. **Downloads**: Always test download functionality across different browsers
-6. **Responsive**: Use size based on container width for responsive designs
-7. **Colors**: Ensure high contrast between foreground and background for scanning
-
-## Browser Support
-
-- Chrome/Edge: Full support
-- Firefox: Full support
-- Safari: Full support
-- IE11: Not supported (uses ES6+ features)
 
 ---
 
-**For more examples and the interactive playground, visit the repository!**
+## Themes, templates, animations
+
+### Themes
+
+`light`, `dark`, `neon`, `corporate`, `glassmorphism`, `gradient`, `modern`, `minimal`, `cyberpunk`, `premium`.
+
+```tsx
+<>
+  <QRCode value="https://example.com" theme="corporate" />
+  <QRCode value="https://example.com" theme="dark" fgColor="#fde68a" />
+</>
+```
+
+`dark`, `neon`, `cyberpunk` and `premium` put light modules on a dark background. Recent iOS and Android cameras read these, but some scanner apps don't. Use a light theme when the code must work everywhere, or check the result with `verify()`.
+
+`THEMES` is exported if you want to list or extend the presets.
+
+### Templates
+
+`TEMPLATES` holds 19 ready-made designs across business, restaurant, wedding, event, education, real-estate, healthcare, e-commerce, startup and agency categories. Each has `id`, `name`, `category`, `description`, `sampleValue` and a `preset` of `QRCode` props:
+
+```tsx
+const template = TEMPLATES.find((t) => t.id === 'restaurant-menu');
+
+<QRCode value="https://example.com/menu" {...template?.preset} />
+```
+
+### Animations
+
+`pulse`, `zoom`, `bounce`, `rotate`, `fade`, `wave`, `glow`, `breathing`, `scan`.
+
+```tsx
+<QRCode value="https://example.com" animation="breathing" />
+```
+
+The CSS is embedded inside the SVG, so no global stylesheet is needed. `getAnimationCSS(name)` returns it if you want to apply it elsewhere (the class is `.qrm-anim`).
+
+---
+
+## Headless utilities
+
+No React needed. Import from `react-qr-master/core` to use them in Server Components, route handlers or plain Node (the main entry is marked `"use client"`).
+
+```ts
+import { encodeWiFi, encodeUPI, encodeContact, generateMatrix } from 'react-qr-master/core';
+
+const wifi = encodeWiFi({ ssid: 'Cafe', password: 'latte', encryption: 'WPA2' });
+// "WIFI:T:WPA;S:Cafe;P:latte;;"
+
+const upi = encodeUPI({ payeeVPA: 'shop@upi', payeeName: 'Shop', amount: '10.00' });
+// "upi://pay?pa=shop%40upi&pn=Shop&am=10.00&cu=INR"
+
+const { size, modules } = generateMatrix(wifi, 'M'); // modules[row][col] === true for dark
+```
+
+Encoders: `encodeWiFi`, `encodeEmail`, `encodePhone`, `encodeSMS`, `encodeWhatsApp`, `encodeContact`, `encodeLocation`, `encodeGoogleMaps`, `encodeEvent`, `encodeUPI`, `encodeCrypto`, `encodeSocial`.
+
+### Render an SVG string on the server
+
+`QRCode` renders without browser APIs, so `react-dom/server` turns it into a standalone SVG for emails, PDFs or API responses in Node, Express or Vite SSR:
+
+```tsx
+import { renderToStaticMarkup } from 'react-dom/server';
+import { QRCode } from 'react-qr-master/core';
+
+const svg = renderToStaticMarkup(<QRCode value="https://example.com" shape="rounded" />);
+```

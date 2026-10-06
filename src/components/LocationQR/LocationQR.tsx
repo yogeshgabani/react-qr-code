@@ -4,7 +4,7 @@ import { encodeLocation, type LocationPayload } from '../../core/encoders';
 
 export interface LocationQRProps extends Omit<QRCodeProps, 'value'>, LocationPayload {}
 
-export const LocationQR = forwardRef<SVGSVGElement, LocationQRProps>(function LocationQR(
+export const LocationQR = /* @__PURE__ */ forwardRef<SVGSVGElement, LocationQRProps>(function LocationQR(
   { latitude, longitude, accuracy, query, ...rest },
   ref,
 ) {

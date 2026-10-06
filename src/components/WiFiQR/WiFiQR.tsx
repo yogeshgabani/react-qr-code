@@ -4,7 +4,7 @@ import { encodeWiFi, type WiFiPayload } from '../../core/encoders';
 
 export interface WiFiQRProps extends Omit<QRCodeProps, 'value'>, WiFiPayload {}
 
-export const WiFiQR = forwardRef<SVGSVGElement, WiFiQRProps>(function WiFiQR(
+export const WiFiQR = /* @__PURE__ */ forwardRef<SVGSVGElement, WiFiQRProps>(function WiFiQR(
   { ssid, password, encryption, hidden, ...rest },
   ref,
 ) {

@@ -4,7 +4,7 @@ import { encodeEvent, type EventPayload } from '../../core/encoders';
 
 export interface EventQRProps extends Omit<QRCodeProps, 'value' | 'title'>, EventPayload {}
 
-export const EventQR = forwardRef<SVGSVGElement, EventQRProps>(function EventQR(
+export const EventQR = /* @__PURE__ */ forwardRef<SVGSVGElement, EventQRProps>(function EventQR(
   { title, start, end, allDay, location, description, url, organizer, ...rest },
   ref,
 ) {

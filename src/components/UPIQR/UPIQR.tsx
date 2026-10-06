@@ -4,7 +4,7 @@ import { encodeUPI, type UPIPayload } from '../../core/encoders';
 
 export interface UPIQRProps extends Omit<QRCodeProps, 'value'>, UPIPayload {}
 
-export const UPIQR = forwardRef<SVGSVGElement, UPIQRProps>(function UPIQR(
+export const UPIQR = /* @__PURE__ */ forwardRef<SVGSVGElement, UPIQRProps>(function UPIQR(
   {
     payeeVPA,
     payeeName,

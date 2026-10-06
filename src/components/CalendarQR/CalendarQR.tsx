@@ -12,7 +12,7 @@ export interface CalendarQRProps extends Omit<QRCodeProps, 'value' | 'title'>, E
   recurrence?: string;
 }
 
-export const CalendarQR = forwardRef<SVGSVGElement, CalendarQRProps>(function CalendarQR(
+export const CalendarQR = /* @__PURE__ */ forwardRef<SVGSVGElement, CalendarQRProps>(function CalendarQR(
   {
     title,
     start,

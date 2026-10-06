@@ -4,7 +4,7 @@ import { encodeSMS, type SMSPayload } from '../../core/encoders';
 
 export interface SMSQRProps extends Omit<QRCodeProps, 'value'>, SMSPayload {}
 
-export const SMSQR = forwardRef<SVGSVGElement, SMSQRProps>(function SMSQR(
+export const SMSQR = /* @__PURE__ */ forwardRef<SVGSVGElement, SMSQRProps>(function SMSQR(
   { phoneNumber, message, ...rest },
   ref,
 ) {

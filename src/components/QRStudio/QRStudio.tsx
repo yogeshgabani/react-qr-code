@@ -91,7 +91,9 @@ const COLORS = {
   mono: "'JetBrains Mono', ui-monospace, SFMono-Regular, monospace",
 };
 
-const styleSheet = `
+// Wrapped in a pure IIFE: the `${COLORS.x}` reads would otherwise count as
+// side effects and keep this CSS in every bundle that imports the package.
+const styleSheet = /* @__PURE__ */ (() => `
 .qrm-studio {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
   color: ${COLORS.text};
@@ -385,7 +387,7 @@ const styleSheet = `
   background: radial-gradient(circle, rgba(34,211,238,0.45), transparent 70%);
   animation-delay: -7s;
 }
-`;
+`)();
 
 // ─── Mini SVG previews for shape/corner/eye chips ──────────────────────────
 const SHAPE_SVG: Record<ModuleShape, ReactNode> = {
@@ -572,7 +574,7 @@ function ThemeChip({
 }
 
 // ─── Layout helpers ────────────────────────────────────────────────────────
-const labelStyle: CSSProperties = {
+const labelStyle: CSSProperties = /* @__PURE__ */ (() => ({
   fontSize: 10.5,
   fontWeight: 700,
   color: COLORS.textMuted,
@@ -583,7 +585,7 @@ const labelStyle: CSSProperties = {
   letterSpacing: 0.6,
   textTransform: 'uppercase',
   fontFamily: COLORS.mono,
-};
+}))();
 
 function Field({
   label,

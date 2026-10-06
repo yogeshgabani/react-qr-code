@@ -5,7 +5,7 @@ export interface WebsiteQRProps extends Omit<QRCodeProps, 'value'> {
   url: string;
 }
 
-export const WebsiteQR = forwardRef<SVGSVGElement, WebsiteQRProps>(function WebsiteQR(
+export const WebsiteQR = /* @__PURE__ */ forwardRef<SVGSVGElement, WebsiteQRProps>(function WebsiteQR(
   { url, ...rest },
   ref,
 ) {

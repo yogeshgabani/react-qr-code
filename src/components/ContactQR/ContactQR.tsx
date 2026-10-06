@@ -4,7 +4,7 @@ import { encodeContact, type ContactPayload } from '../../core/encoders';
 
 export interface ContactQRProps extends Omit<QRCodeProps, 'value' | 'title'>, ContactPayload {}
 
-export const ContactQR = forwardRef<SVGSVGElement, ContactQRProps>(function ContactQR(
+export const ContactQR = /* @__PURE__ */ forwardRef<SVGSVGElement, ContactQRProps>(function ContactQR(
   {
     firstName,
     lastName,

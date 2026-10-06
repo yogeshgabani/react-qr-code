@@ -432,7 +432,7 @@ function qrcode(typeNumber: number, errorCorrectionLevel: ErrorCorrectionLevel):
   return _this;
 }
 
-const QRUtil = (() => {
+const QRUtil = /* @__PURE__ */ (() => {
   const PATTERN_POSITION_TABLE = [
     [],
     [6, 18],
@@ -672,7 +672,7 @@ const QRUtil = (() => {
   };
 })();
 
-const QRMath = (() => {
+const QRMath = /* @__PURE__ */ (() => {
   const EXP_TABLE = new Array(256);
   const LOG_TABLE = new Array(256);
 
@@ -764,7 +764,7 @@ interface RSBlock {
   totalCount: number;
 }
 
-const QRRSBlock = (() => {
+const QRRSBlock = /* @__PURE__ */ (() => {
   const RS_BLOCK_TABLE = [
     [1, 26, 19],
     [1, 26, 16],

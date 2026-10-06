@@ -29,7 +29,7 @@ interface DynamicState {
  * max-scans are enforced locally. Pair with a real redirect backend in
  * production for cross-device dynamism.
  */
-export const DynamicQRCode = forwardRef<SVGSVGElement, DynamicQRCodeProps>(
+export const DynamicQRCode = /* @__PURE__ */ forwardRef<SVGSVGElement, DynamicQRCodeProps>(
   function DynamicQRCode(
     {
       id,

@@ -4,7 +4,7 @@ import { encodeSocial, type SocialPayload } from '../../core/encoders';
 
 export interface SocialQRProps extends Omit<QRCodeProps, 'value'>, SocialPayload {}
 
-export const SocialQR = forwardRef<SVGSVGElement, SocialQRProps>(function SocialQR(
+export const SocialQR = /* @__PURE__ */ forwardRef<SVGSVGElement, SocialQRProps>(function SocialQR(
   { platform, username, ...rest },
   ref,
 ) {

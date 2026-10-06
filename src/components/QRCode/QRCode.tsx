@@ -122,7 +122,7 @@ function applyTheme(theme: QRTheme | undefined, props: QRCodeProps): Required<
   };
 }
 
-export const QRCode = forwardRef<SVGSVGElement, QRCodeProps>(function QRCode(props, ref) {
+export const QRCode = /* @__PURE__ */ forwardRef<SVGSVGElement, QRCodeProps>(function QRCode(props, ref) {
   const {
     value,
     size = 256,

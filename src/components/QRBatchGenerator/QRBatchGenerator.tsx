@@ -1,15 +1,11 @@
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from 'react';
-import Papa from 'papaparse';
 import { QRCode, type QRCodeProps } from '../QRCode/QRCode';
+import { parseCSVRows, parseJSONRows, type BatchRow } from '../../utils/batch-rows';
+import { canvasToBlob, svgToCanvas, triggerBlobDownload } from '../../utils/download';
+import { buildPDF, canvasToPdfImage, fitHelvetica, measureHelvetica, type PdfPage } from '../../utils/pdf';
+import { buildZip, uniqueFileName, type ZipEntry } from '../../utils/zip';
 
-export interface BatchRow {
-  /** Unique identifier used as the filename stem. */
-  id?: string;
-  /** The QR payload value. */
-  value: string;
-  /** Optional label / display name. */
-  label?: string;
-}
+export type { BatchRow } from '../../utils/batch-rows';
 
 export interface QRBatchGeneratorProps {
   /** Initial rows. */
@@ -23,47 +19,16 @@ export interface QRBatchGeneratorProps {
   style?: CSSProperties;
 }
 
-function parseJSONRows(input: string): BatchRow[] {
-  const parsed: unknown = JSON.parse(input);
-  if (!Array.isArray(parsed)) {
-    throw new Error('JSON must be an array of {id?, value, label?} objects.');
-  }
-  return parsed.map((row, idx) => {
-    if (typeof row === 'string') return { value: row, id: `row-${idx + 1}` };
-    if (row && typeof row === 'object' && 'value' in row) {
-      const r = row as Record<string, unknown>;
-      return {
-        id: typeof r.id === 'string' ? r.id : `row-${idx + 1}`,
-        value: String(r.value),
-        ...(typeof r.label === 'string' ? { label: r.label } : {}),
-      };
-    }
-    throw new Error(`Row ${idx + 1} missing "value" field.`);
-  });
-}
-
-function parseCSVRows(input: string): BatchRow[] {
-  const result = Papa.parse<Record<string, string>>(input.trim(), {
-    header: true,
-    skipEmptyLines: true,
-  });
-  if (result.errors.length) {
-    throw new Error(result.errors[0]?.message ?? 'CSV parse error');
-  }
-  return result.data.map((row, idx) => ({
-    id: row.id ?? `row-${idx + 1}`,
-    value: row.value ?? row.url ?? row.text ?? '',
-    ...(row.label ? { label: row.label } : {}),
-  })).filter((r) => r.value);
-}
-
-async function renderQRToBlob(
+/** Render a QR off-screen and rasterise it. */
+async function renderQRToCanvas(
   value: string,
   options: Omit<QRCodeProps, 'value'> | undefined,
   pixelSize: number,
-): Promise<Blob> {
-  // Render off-screen using a temporary container.
-  const { createRoot } = await import('react-dom/client');
+): Promise<HTMLCanvasElement> {
+  const [{ createRoot }, { flushSync }] = await Promise.all([
+    import('react-dom/client'),
+    import('react-dom'),
+  ]);
   const container = document.createElement('div');
   container.style.position = 'fixed';
   container.style.left = '-99999px';
@@ -71,40 +36,29 @@ async function renderQRToBlob(
   document.body.appendChild(container);
   const root = createRoot(container);
   try {
-    await new Promise<void>((resolve) => {
-      root.render(
-        <QRCode value={value} {...(options ?? {})} size={pixelSize} />,
-      );
-      requestAnimationFrame(() => resolve());
+    // flushSync commits synchronously, so the <svg> exists right after.
+    flushSync(() => {
+      root.render(<QRCode value={value} {...(options ?? {})} size={pixelSize} />);
     });
     const svg = container.querySelector('svg');
     if (!svg) throw new Error('Failed to render QR for batch export');
-    const xml = new XMLSerializer().serializeToString(svg);
-    const svgBlob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
-    try {
-      const img = await new Promise<HTMLImageElement>((res, rej) => {
-        const i = new Image();
-        i.onload = () => res(i);
-        i.onerror = () => rej(new Error('SVG → image failed'));
-        i.src = url;
-      });
-      const canvas = document.createElement('canvas');
-      canvas.width = pixelSize;
-      canvas.height = pixelSize;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Canvas 2D unavailable');
-      ctx.drawImage(img, 0, 0, pixelSize, pixelSize);
-      return await new Promise<Blob>((res, rej) => {
-        canvas.toBlob((b) => (b ? res(b) : rej(new Error('toBlob null'))), 'image/png');
-      });
-    } finally {
-      URL.revokeObjectURL(url);
-    }
+    return await svgToCanvas(svg, pixelSize);
   } finally {
     root.unmount();
     container.remove();
   }
+}
+
+// A4 portrait in points, 3 columns × 4 rows per page.
+const A4 = { width: 595.28, height: 841.89 };
+const PDF_MARGIN = 36;
+const PDF_GAP = 18;
+const PDF_COLS = 3;
+const PDF_LABEL_SIZE = 9;
+const PDF_LABEL_SPACE = 16;
+
+function batchLabel(row: BatchRow): string {
+  return row.label ?? row.id ?? row.value;
 }
 
 export function QRBatchGenerator({
@@ -136,21 +90,18 @@ export function QRBatchGenerator({
     setBusy(true);
     setError(null);
     try {
-      const JSZip = (await import('jszip')).default;
-      const zip = new JSZip();
+      const used = new Set<string>();
+      const entries: ZipEntry[] = [];
       for (const row of rows) {
-        const blob = await renderQRToBlob(row.value, qrOptions, exportPixelSize);
-        zip.file(`${row.id || row.value.slice(0, 30)}.png`, blob);
+        const canvas = await renderQRToCanvas(row.value, qrOptions, exportPixelSize);
+        const png = await canvasToBlob(canvas, 'png');
+        entries.push({
+          name: uniqueFileName(row.id || row.value, 'png', used),
+          data: new Uint8Array(await png.arrayBuffer()),
+        });
       }
-      const content = await zip.generateAsync({ type: 'blob' });
-      const url = URL.createObjectURL(content);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `qr-batch-${Date.now()}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      const zip = new Blob([buildZip(entries) as BlobPart], { type: 'application/zip' });
+      triggerBlobDownload(zip, `qr-batch-${Date.now()}.zip`);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -163,41 +114,29 @@ export function QRBatchGenerator({
     setBusy(true);
     setError(null);
     try {
-      const { jsPDF } = await import('jspdf');
-      const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const cellSize = 160;
-      const gap = 20;
-      const cols = 3;
-      const colW = (pageW - gap * (cols + 1)) / cols;
-      let col = 0;
-      let row = 0;
-      for (const r of rows) {
-        const blob = await renderQRToBlob(r.value, qrOptions, exportPixelSize);
-        const reader = new FileReader();
-        const dataUrl = await new Promise<string>((res, rej) => {
-          reader.onload = () => res(reader.result as string);
-          reader.onerror = () => rej(reader.error ?? new Error('FileReader error'));
-          reader.readAsDataURL(blob);
-        });
-        const x = gap + col * (colW + gap);
-        const y = gap + 40 + row * (cellSize + 40);
-        pdf.addImage(dataUrl, 'PNG', x, y, colW, colW);
-        pdf.setFontSize(9);
-        pdf.text(r.label ?? r.id ?? r.value.slice(0, 28), x, y + colW + 14, {
-          maxWidth: colW,
-        });
-        col++;
-        if (col >= cols) {
-          col = 0;
-          row++;
-          if (y + cellSize * 2 > pdf.internal.pageSize.getHeight()) {
-            pdf.addPage();
-            row = 0;
-          }
-        }
+      const cell = (A4.width - PDF_MARGIN * 2 - PDF_GAP * (PDF_COLS - 1)) / PDF_COLS;
+      const rowHeight = cell + PDF_LABEL_SPACE + PDF_GAP;
+      const rowsPerPage = Math.floor((A4.height - PDF_MARGIN * 2 + PDF_GAP) / rowHeight);
+      const perPage = PDF_COLS * rowsPerPage;
+
+      const pages: PdfPage[] = [];
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i]!;
+        if (i % perPage === 0) pages.push({ ...A4, images: [], texts: [] });
+        const page = pages[pages.length - 1]!;
+        const slot = i % perPage;
+        const x = PDF_MARGIN + (slot % PDF_COLS) * (cell + PDF_GAP);
+        const y = PDF_MARGIN + Math.floor(slot / PDF_COLS) * rowHeight;
+
+        const canvas = await renderQRToCanvas(r.value, qrOptions, exportPixelSize);
+        page.images!.push({ image: await canvasToPdfImage(canvas), x, y, width: cell, height: cell });
+
+        const label = fitHelvetica(batchLabel(r), PDF_LABEL_SIZE, cell);
+        const labelX = x + (cell - measureHelvetica(label, PDF_LABEL_SIZE)) / 2;
+        page.texts!.push({ text: label, x: labelX, y: y + cell + 12, size: PDF_LABEL_SIZE });
       }
-      pdf.save(`qr-batch-${Date.now()}.pdf`);
+      const pdf = new Blob([buildPDF(pages) as BlobPart], { type: 'application/pdf' });
+      triggerBlobDownload(pdf, `qr-batch-${Date.now()}.pdf`);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -325,7 +264,7 @@ export function QRBatchGenerator({
                   wordBreak: 'break-word',
                 }}
               >
-                {r.label ?? r.id ?? r.value.slice(0, 24)}
+                {batchLabel(r).slice(0, 40)}
               </span>
             </div>
           ))}

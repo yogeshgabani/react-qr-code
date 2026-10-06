@@ -6,7 +6,7 @@ import {
   useState,
   type CSSProperties,
 } from 'react';
-import jsQR from 'jsqr';
+import { loadJsQR, type JsQR } from '../../utils/load-jsqr';
 
 export interface QRScanResult {
   data: string;
@@ -39,7 +39,7 @@ export interface QRScannerProps {
   height?: number | string;
 }
 
-export const QRScanner = forwardRef<QRScannerHandle, QRScannerProps>(function QRScanner(
+export const QRScanner = /* @__PURE__ */ forwardRef<QRScannerHandle, QRScannerProps>(function QRScanner(
   {
     onScan,
     onError,
@@ -103,8 +103,12 @@ export const QRScanner = forwardRef<QRScannerHandle, QRScannerProps>(function QR
   useEffect(() => {
     let cancelled = false;
     let rafId = 0;
+    let jsQR: JsQR | null = null;
 
     async function start() {
+      // Fetch the decoder while the camera permission prompt is open.
+      const decoder = loadJsQR();
+      decoder.catch(() => {});
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -116,6 +120,8 @@ export const QRScanner = forwardRef<QRScannerHandle, QRScannerProps>(function QR
         }
         streamRef.current = stream;
         trackRef.current = stream.getVideoTracks()[0] ?? null;
+        jsQR = await decoder;
+        if (cancelled) return;
         const video = videoRef.current;
         if (video) {
           video.srcObject = stream;
@@ -123,6 +129,7 @@ export const QRScanner = forwardRef<QRScannerHandle, QRScannerProps>(function QR
           tick();
         }
       } catch (e) {
+        streamRef.current?.getTracks().forEach((t) => t.stop());
         const err = e instanceof Error ? e : new Error(String(e));
         setError(err);
         onErrorRef.current?.(err);
@@ -135,7 +142,7 @@ export const QRScanner = forwardRef<QRScannerHandle, QRScannerProps>(function QR
       if (pausedRef.current) return;
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      if (!video || !canvas) return;
+      if (!video || !canvas || !jsQR) return;
       if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
       const w = video.videoWidth;
       const h = video.videoHeight;

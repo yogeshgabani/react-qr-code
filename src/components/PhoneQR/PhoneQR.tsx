@@ -4,7 +4,7 @@ import { encodePhone, type PhonePayload } from '../../core/encoders';
 
 export interface PhoneQRProps extends Omit<QRCodeProps, 'value'>, PhonePayload {}
 
-export const PhoneQR = forwardRef<SVGSVGElement, PhoneQRProps>(function PhoneQR(
+export const PhoneQR = /* @__PURE__ */ forwardRef<SVGSVGElement, PhoneQRProps>(function PhoneQR(
   { phoneNumber, ...rest },
   ref,
 ) {

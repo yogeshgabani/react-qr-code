@@ -4,7 +4,7 @@ import { encodeGoogleMaps, type GoogleMapsPayload } from '../../core/encoders';
 
 export interface GoogleMapsQRProps extends Omit<QRCodeProps, 'value'>, GoogleMapsPayload {}
 
-export const GoogleMapsQR = forwardRef<SVGSVGElement, GoogleMapsQRProps>(function GoogleMapsQR(
+export const GoogleMapsQR = /* @__PURE__ */ forwardRef<SVGSVGElement, GoogleMapsQRProps>(function GoogleMapsQR(
   { query, latitude, longitude, ...rest },
   ref,
 ) {

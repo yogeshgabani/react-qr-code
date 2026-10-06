@@ -5,7 +5,7 @@ export interface TextQRProps extends Omit<QRCodeProps, 'value'> {
   text: string;
 }
 
-export const TextQR = forwardRef<SVGSVGElement, TextQRProps>(function TextQR(
+export const TextQR = /* @__PURE__ */ forwardRef<SVGSVGElement, TextQRProps>(function TextQR(
   { text, ...rest },
   ref,
 ) {

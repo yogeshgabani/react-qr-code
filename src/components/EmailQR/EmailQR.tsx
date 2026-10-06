@@ -4,7 +4,7 @@ import { encodeEmail, type EmailPayload } from '../../core/encoders';
 
 export interface EmailQRProps extends Omit<QRCodeProps, 'value'>, EmailPayload {}
 
-export const EmailQR = forwardRef<SVGSVGElement, EmailQRProps>(function EmailQR(
+export const EmailQR = /* @__PURE__ */ forwardRef<SVGSVGElement, EmailQRProps>(function EmailQR(
   { to, subject, body, cc, bcc, ...rest },
   ref,
 ) {
