@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const pkg = JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf8')) as {
+const pkg = JSON.parse(readFileSync(resolve(import.meta.dirname, '../package.json'), 'utf8')) as {
   version: string;
 };
 
@@ -17,7 +17,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      'react-qr-master': resolve(__dirname, '../src/index.ts'),
+      'react-qr-master': resolve(import.meta.dirname, '../src/index.ts'),
     },
   },
   server: {

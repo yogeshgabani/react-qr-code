@@ -10,7 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [18, 20, 22]
+        # vitest 5 and vite 8 need Node 22.12+ (only for developing this repo;
+        # the published package still works for apps on Node 18+).
+        node: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
