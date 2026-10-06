@@ -1,5 +1,8 @@
 /// <reference types="vite/client" />
 
+/** `version` from the root package.json, injected by vite.config.ts. */
+declare const __PKG_VERSION__: string;
+
 interface ImportMetaEnv {
   readonly VITE_SOCIAL_WHATSAPP?: string;
   readonly VITE_SOCIAL_INSTAGRAM?: string;

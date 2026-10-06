@@ -8,6 +8,7 @@ import { ScannerTab } from "./tabs/ScannerTab";
 import { BatchTab } from "./tabs/BatchTab";
 import { DynamicTab } from "./tabs/DynamicTab";
 import { AnalyticsTab } from "./tabs/AnalyticsTab";
+import { ChangelogTab } from "./tabs/ChangelogTab";
 import {
   GettingStarted,
   QRCodeModal,
@@ -18,7 +19,7 @@ import {
 } from "./components";
 import { tokens, pill } from "./styles";
 import { QRModalContext } from "./QRModalContext";
-import type { QRCodeProps } from "react-qr-master";
+import { TEMPLATES, type QRCodeProps } from "react-qr-master";
 
 type TabId =
   | "types"
@@ -29,7 +30,8 @@ type TabId =
   | "scanner"
   | "batch"
   | "dynamic"
-  | "analytics";
+  | "analytics"
+  | "changelog";
 
 interface TabDef {
   id: TabId;
@@ -62,7 +64,7 @@ const TABS: TabDef[] = [
     label: "Themes",
     group: "Showcase",
     icon: "✨",
-    description: "10 hand-tuned presets â€” one prop applies the whole look",
+    description: "10 hand-tuned presets — one prop applies the whole look",
     Component: ThemesTab,
   },
   {
@@ -78,7 +80,7 @@ const TABS: TabDef[] = [
     label: "Studio",
     group: "Apps",
     icon: "🛠️",
-    description: "Visual editor â€” every knob on one screen",
+    description: "Visual editor — every knob on one screen",
     Component: StudioTab,
   },
   {
@@ -94,7 +96,7 @@ const TABS: TabDef[] = [
     label: "Batch",
     group: "Apps",
     icon: "📦",
-    description: "CSV / JSON â†’ ZIP or PDF",
+    description: "CSV / JSON → ZIP or PDF",
     Component: BatchTab,
   },
   {
@@ -113,6 +115,14 @@ const TABS: TabDef[] = [
     description: "Client-side scan tracking and breakdowns",
     Component: AnalyticsTab,
   },
+  {
+    id: "changelog",
+    label: "Changelog",
+    group: "Resources",
+    icon: "🕘",
+    description: "What's new in each release of react-qr-master",
+    Component: ChangelogTab,
+  },
 ];
 
 const STATS = [
@@ -122,7 +132,7 @@ const STATS = [
   { value: "3", label: "Gradients" },
   { value: "9", label: "Animations" },
   { value: "10", label: "Themes" },
-  { value: "18", label: "Templates" },
+  { value: String(TEMPLATES.length), label: "Templates" },
 ];
 
 const sidebarBtn = (active: boolean): CSSProperties => ({
@@ -266,7 +276,7 @@ export default function App() {
           gap: 0,
         }}
       >
-        {/* â”€â”€ Mobile top bar (hamburger) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── Mobile top bar (hamburger) ──────────────────────────────────── */}
         {isMobile && (
           <div
             style={{
@@ -335,7 +345,7 @@ export default function App() {
           </div>
         )}
 
-        {/* â”€â”€ Drawer backdrop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── Drawer backdrop ───────────────────────────────────────────── */}
         {isMobile && drawerOpen && (
           <div
             onClick={() => setDrawerOpen(false)}
@@ -348,7 +358,7 @@ export default function App() {
           />
         )}
 
-        {/* â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── Sidebar ─────────────────────────────────────────────────────── */}
         <aside
           style={{
             padding: "24px 16px",
@@ -461,7 +471,7 @@ export default function App() {
                     fontWeight: 600,
                   }}
                 >
-                  v0.1.0 • playground
+                  v{__PKG_VERSION__} • playground
                 </div>
               </div>
             </div>
@@ -531,12 +541,12 @@ export default function App() {
           >
             Edit anything under{" "}
             <code style={{ color: tokens.accent }}>src/</code> or{" "}
-            <code style={{ color: tokens.accent }}>playground/src/</code> â€”
+            <code style={{ color: tokens.accent }}>playground/src/</code> —
             Vite HMR refreshes instantly.
           </div>
         </aside>
 
-        {/* â”€â”€ Main content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── Main content ───────────────────────────────────────────────── */}
         <main style={{ padding: "0", minWidth: 0 }}>
           {/* Hero / header strip */}
           <header
@@ -863,7 +873,7 @@ export default function App() {
                     }}
                   >
                     <a
-                      href="https://github.com/yogeshgabani/react-next-select"
+                      href="https://github.com/yogeshgabani/react-qr-code"
                       target="_blank"
                       rel="noreferrer"
                       style={{
@@ -893,19 +903,19 @@ export default function App() {
                       GitHub
                     </a>
                     <a
-                      href="https://www.npmjs.com/package/react-next-select"
+                      href="https://www.npmjs.com/package/react-qr-master"
                       target="_blank"
                       rel="noreferrer"
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
-                        gap: 8,
-                        padding: "9px 16px",
+                        gap: isMobile ? 4 : 8,
+                        padding: isMobile ? "6px 12px" : "9px 16px",
                         borderRadius: 999,
                         border: "1px solid rgb(var(--border-rgb) / 0.18)",
                         background: "rgb(var(--surface-rgb) / 0.04)",
                         color: "var(--text-primary)",
-                        fontSize: 13,
+                        fontSize: isMobile ? 11 : 13,
                         fontWeight: 500,
                         textDecoration: "none",
                         transition: "all 0.2s ease",
@@ -927,13 +937,13 @@ export default function App() {
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
-                        gap: 8,
-                        padding: "9px 16px",
+                        gap: isMobile ? 4 : 8,
+                        padding: isMobile ? "6px 12px" : "9px 16px",
                         borderRadius: 999,
                         border: "1px solid rgb(var(--border-rgb) / 0.18)",
                         background: "rgb(var(--surface-rgb) / 0.04)",
                         color: "var(--text-primary)",
-                        fontSize: 13,
+                        fontSize: isMobile ? 11 : 13,
                         fontWeight: 500,
                         textDecoration: "none",
                         transition: "all 0.2s ease",
@@ -958,7 +968,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Social card â€” horizontal profile row, wraps on small screens */}
+                {/* Social card — horizontal profile row, wraps on small screens */}
                 <div
                   style={{
                     position: "relative",
@@ -967,7 +977,7 @@ export default function App() {
                     justifyContent: "space-between",
                     flexWrap: "wrap",
                     gap: 18,
-                    padding: "18px 0px",
+                    padding: isMobile ? "16px" : "18px 22px",
                     marginBottom: 20,
                     borderRadius: 16,
                     border: "1px solid rgb(var(--border-rgb) / 0.12)",
@@ -992,7 +1002,7 @@ export default function App() {
                     }}
                   />
 
-                  {/* Left: avatar + text â€” kept together so they wrap as a unit */}
+                  {/* Left: avatar + text — kept together so they wrap as a unit */}
                   <div
                     style={{
                       display: "flex",
@@ -1062,7 +1072,7 @@ export default function App() {
                   </div>
 
                   {/* Right: social icons */}
-                  <SocialIcons size={38} />
+                  <SocialIcons size={isMobile ? 32 : 38} />
 
                   {/* Bottom gradient hairline */}
                   <div

@@ -17,6 +17,7 @@ export type IconName =
   | 'batch'
   | 'dynamic'
   | 'analytics'
+  | 'changelog'
   | 'brand'
   | 'calendar'
   | 'eye'
@@ -92,6 +93,12 @@ const PATHS: Record<IconName, JSX.Element> = {
     <>
       <path d="M3 3v18h18" />
       <path d="M7 15v-4M12 15V8M17 15v-6" />
+    </>
+  ),
+  changelog: (
+    <>
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5M12 7v5l4 2" />
     </>
   ),
 

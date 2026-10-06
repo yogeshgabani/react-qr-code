@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.2.0
+All notable changes to `react-qr-master`. Versions follow [semver](https://semver.org).
+
+## 0.2.0 - 2026-10-06
 
 ### Added
 
@@ -25,6 +27,6 @@
 - Docs: every example in README and the API reference now uses the real prop names and is type-checked in CI.
 - CommonJS consumers now get the correct `.d.cts` type declarations.
 
-## 0.1.0
+## 0.1.0 - 2026-07-07
 
-- Initial release.
+- Initial release: `QRCode` with themes, shapes, gradients, logos and animations; 16 QR type components; scanner, studio, batch, dynamic QR and analytics.
