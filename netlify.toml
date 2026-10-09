@@ -1,0 +1,10 @@
+# Deploys the playground (live demo) to Netlify.
+# `vite build playground` writes to playground/dist, not the root dist/
+# (that one holds the npm package build).
+[build]
+  command = "npm run playground:build"
+  publish = "playground/dist"
+
+[build.environment]
+  # Vite 8 needs Node 20.19+; match the GitHub Pages workflow.
+  NODE_VERSION = "22"
