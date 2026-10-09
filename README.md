@@ -9,9 +9,9 @@
 [![types](https://img.shields.io/npm/types/react-qr-master)](https://www.npmjs.com/package/react-qr-master)
 [![MIT License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
-**[Live demo](https://yogeshgabani.github.io/react-qr-code/)** · **[API reference](./FEATURES.md)** · **[Changelog](./CHANGELOG.md)**
+**[Live demo](https://react-next-qrcode.netlify.app/)** · **[API reference](./FEATURES.md)** · **[Changelog](./CHANGELOG.md)**
 
-![QR codes made with react-qr-master: logo, gradient, circle, theme, WiFi, UPI, vCard and dot styles](https://raw.githubusercontent.com/yogeshgabani/react-qr-code/main/docs/showcase.png)
+[![QR codes made with react-qr-master: logo, gradient, circle, theme, WiFi, UPI, vCard and dot styles](https://raw.githubusercontent.com/yogeshgabani/react-qr-code/main/docs/showcase.png)](https://react-next-qrcode.netlify.app/)
 
 ```bash
 npm install react-qr-master
