@@ -51,14 +51,20 @@ function readPixels(source: HTMLCanvasElement, blurPx: number): Uint8ClampedArra
   return ctx.getImageData(0, 0, width, height).data;
 }
 
+interface View {
+  pixels: Uint8ClampedArray;
+  width: number;
+  height: number;
+}
+
 function decodeAll(
   jsQR: JsQR,
-  views: Array<{ pixels: Uint8ClampedArray; size: number }>,
+  views: View[],
   inversionAttempts: 'dontInvert' | 'invertFirst',
 ): string[] {
   const found: string[] = [];
-  for (const { pixels, size } of views) {
-    const hit = jsQR(pixels, size, size, { inversionAttempts });
+  for (const { pixels, width, height } of views) {
+    const hit = jsQR(pixels, width, height, { inversionAttempts });
     if (hit) found.push(hit.data);
   }
   return found;
@@ -75,16 +81,17 @@ export async function verifyQR(
   options: VerifyOptions = {},
 ): Promise<VerifyResult> {
   const { expected, pixelSize = 400 } = options;
-  // The SVG's viewBox is measured in modules (including the quiet zone).
+  // The SVG's viewBox is measured in modules (quiet zone and label included).
   const moduleCount = svg.viewBox?.baseVal?.width || 41;
   const jsQR = await loadJsQR();
 
-  const views: Array<{ pixels: Uint8ClampedArray; size: number }> = [];
+  const views: View[] = [];
   for (const scale of SCALES) {
     const size = Math.round(pixelSize * scale);
     const sharp = await svgToCanvas(svg, size, '#ffffff');
+    const { width, height } = sharp;
     for (const blur of BLURS) {
-      views.push({ pixels: readPixels(sharp, (blur * size) / moduleCount), size });
+      views.push({ pixels: readPixels(sharp, (blur * size) / moduleCount), width, height });
     }
   }
 

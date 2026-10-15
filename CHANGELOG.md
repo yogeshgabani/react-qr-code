@@ -2,6 +2,20 @@
 
 All notable changes to `react-qr-master`. Versions follow [semver](https://semver.org).
 
+## Unreleased
+
+### Added
+
+- `label` prop: a "SCAN ME" style call to action drawn inside the SVG, so downloads, copies, shares and batch exports include it. Three styles (`labelStyle`: `banner`, `pill`, `plain`), top or bottom placement, and `labelColor`, `labelBackground` and `labelFont` to restyle it. Long text shrinks to fit.
+- `scanQRFromImage()`: read a QR from a photo, screenshot, `File`, `Blob`, image URL, `<img>` or `<canvas>`. It handles large photos and light-on-dark codes.
+- `QRScanner` gets `allowImageUpload`, which adds a "Scan an image" button that also works when the camera is blocked, and a `scanImage()` ref method for custom upload or drag-and-drop UIs.
+- QR Studio: call-to-action label controls on the Brand tab.
+
+### Changed
+
+- Raster exports (`download`, `copy`, `share`, `verify`, batch export) keep the SVG's aspect ratio. `pixelSize` is the width, so a labelled QR comes out taller instead of squashed. Square QRs export exactly as before.
+- The npm homepage now points to the live demo at https://react-next-qrcode.netlify.app/.
+
 ## 0.2.0 - 2026-10-06
 
 ### Added

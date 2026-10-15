@@ -40,3 +40,5 @@ export { downloadQR, copyQR, shareQR, canShareQR } from './utils/download';
 export type { DownloadFormat, DownloadOptions, ShareOptions } from './utils/download';
 export { verifyQR } from './utils/verify';
 export type { VerifyOptions, VerifyResult } from './utils/verify';
+export { scanQRFromImage } from './utils/scan-image';
+export type { QRImageSource } from './utils/scan-image';

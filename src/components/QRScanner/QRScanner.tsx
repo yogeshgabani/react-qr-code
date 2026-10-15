@@ -7,6 +7,7 @@ import {
   type CSSProperties,
 } from 'react';
 import { loadJsQR, type JsQR } from '../../utils/load-jsqr';
+import { scanQRFromImage, type QRImageSource } from '../../utils/scan-image';
 
 export interface QRScanResult {
   data: string;
@@ -18,6 +19,12 @@ export interface QRScannerHandle {
   resume: () => void;
   toggleTorch: () => Promise<boolean>;
   isTorchOn: () => boolean;
+  /**
+   * Read a QR from an image (File, Blob, URL, <img>, <canvas>) and report it
+   * through `onScan`, as the upload button does. Resolves the decoded text, or
+   * `null` when the image has no readable QR.
+   */
+  scanImage: (source: QRImageSource) => Promise<string | null>;
 }
 
 export interface QRScannerProps {
@@ -33,6 +40,11 @@ export interface QRScannerProps {
   showOverlay?: boolean;
   /** Reticle / overlay colour. */
   overlayColor?: string;
+  /**
+   * Show a "Scan an image" button that reads a QR from a photo or screenshot.
+   * It stays available when the camera is blocked or missing. Defaults false.
+   */
+  allowImageUpload?: boolean;
   className?: string;
   style?: CSSProperties;
   width?: number | string;
@@ -48,6 +60,7 @@ export const QRScanner = /* @__PURE__ */ forwardRef<QRScannerHandle, QRScannerPr
     pauseOnScan = false,
     showOverlay = true,
     overlayColor = '#22d3ee',
+    allowImageUpload = false,
     className,
     style,
     width = '100%',
@@ -70,6 +83,36 @@ export const QRScanner = /* @__PURE__ */ forwardRef<QRScannerHandle, QRScannerPr
   onErrorRef.current = onError;
 
   const [error, setError] = useState<Error | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Hide the "no QR found" notice after a few seconds.
+  useEffect(() => {
+    if (!notice) return;
+    const id = setTimeout(() => setNotice(null), 3500);
+    return () => clearTimeout(id);
+  }, [notice]);
+
+  // An image is an explicit user choice, so it's always reported, even when
+  // it repeats the last value or the camera is paused.
+  const scanImage = async (source: QRImageSource): Promise<string | null> => {
+    let data: string | null;
+    try {
+      data = await scanQRFromImage(source);
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : String(e));
+      return null;
+    }
+    if (data === null) {
+      setNotice('No QR code found in that image');
+      return null;
+    }
+    setNotice(null);
+    lastScannedRef.current = data;
+    onScanRef.current({ data, timestamp: Date.now() });
+    if (pauseOnScan) pausedRef.current = true;
+    return data;
+  };
 
   useImperativeHandle(ref, () => ({
     pause: () => {
@@ -98,6 +141,7 @@ export const QRScanner = /* @__PURE__ */ forwardRef<QRScannerHandle, QRScannerPr
       }
     },
     isTorchOn: () => torchRef.current,
+    scanImage,
   }));
 
   useEffect(() => {
@@ -238,6 +282,76 @@ export const QRScanner = /* @__PURE__ */ forwardRef<QRScannerHandle, QRScannerPr
           }}
         >
           Camera unavailable: {error.message}
+        </div>
+      ) : null}
+      {allowImageUpload ? (
+        <div
+          style={{
+            position: 'absolute',
+            left: 12,
+            right: 12,
+            bottom: 12,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          {notice ? (
+            <div
+              role="status"
+              style={{
+                padding: '6px 12px',
+                borderRadius: 8,
+                background: 'rgba(0,0,0,0.78)',
+                color: '#fff',
+                fontSize: 13,
+                textAlign: 'center',
+              }}
+            >
+              {notice}
+            </div>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '8px 14px',
+              border: '1px solid rgba(255,255,255,0.35)',
+              borderRadius: 999,
+              background: 'rgba(0,0,0,0.6)',
+              color: '#fff',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M12 15V3M12 3L7 8M12 3L17 8M4 17V19C4 20.1 4.9 21 6 21H18C19.1 21 20 20.1 20 19V17"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Scan an image
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              // Clear it so picking the same file again still fires onChange.
+              e.target.value = '';
+              if (file) void scanImage(file);
+            }}
+          />
         </div>
       ) : null}
     </div>

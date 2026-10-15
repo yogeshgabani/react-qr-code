@@ -5,7 +5,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import { QRCode } from '../QRCode/QRCode';
+import { QRCode, type LabelPosition, type LabelStyle } from '../QRCode/QRCode';
 import { useQRDownload } from '../../hooks/useQRDownload';
 import type { ModuleShape, CornerStyle, EyeShape } from '../../core/shapes';
 import type { QRThemeName } from '../../core/themes';
@@ -750,6 +750,11 @@ export function QRStudio({
   const [frame, setFrame] = useState<'square' | 'rounded'>('square');
   const [margin, setMargin] = useState(4);
   const [moduleSpacing, setModuleSpacing] = useState(0);
+  const [ctaText, setCtaText] = useState('');
+  const [ctaStyle, setCtaStyle] = useState<LabelStyle>('banner');
+  const [ctaPosition, setCtaPosition] = useState<LabelPosition>('bottom');
+  const [ctaColor, setCtaColor] = useState('');
+  const [ctaBackground, setCtaBackground] = useState('');
 
   // Adding a logo covers data modules, so the QR needs higher error correction
   // to stay scannable. Bump from default 'M' to 'H' on add, but respect an
@@ -935,6 +940,15 @@ export function QRStudio({
               {...(animation !== 'none' ? { animation } : {})}
               {...(gradient ? { gradient } : {})}
               frame={frame}
+              {...(ctaText
+                ? {
+                    label: ctaText,
+                    labelStyle: ctaStyle,
+                    labelPosition: ctaPosition,
+                    ...(ctaColor ? { labelColor: ctaColor } : {}),
+                    ...(ctaBackground ? { labelBackground: ctaBackground } : {}),
+                  }
+                : {})}
               {...(logo
                 ? {
                     logo,
@@ -1445,6 +1459,53 @@ export function QRStudio({
                         onChange={(e) => setLogoBorderWidth(Number(e.target.value))}
                       />
                     </Field>
+                  </Row>
+                </>
+              ) : null}
+
+              <Field label="Call to action" hint={ctaText ? undefined : 'none'}>
+                <input
+                  type="text"
+                  value={ctaText}
+                  maxLength={40}
+                  placeholder="SCAN ME"
+                  onChange={(e) => setCtaText(e.target.value)}
+                />
+              </Field>
+
+              {ctaText ? (
+                <>
+                  <Field label="Label style">
+                    <ChipSelect
+                      options={['banner', 'pill', 'plain'] as const}
+                      value={ctaStyle}
+                      onChange={setCtaStyle}
+                      cols={3}
+                    />
+                  </Field>
+                  <Field label="Label position">
+                    <ChipSelect
+                      options={['bottom', 'top'] as const}
+                      value={ctaPosition}
+                      onChange={setCtaPosition}
+                      cols={2}
+                    />
+                  </Field>
+                  <Row>
+                    <ColorField
+                      label="Label text"
+                      value={ctaColor}
+                      onChange={setCtaColor}
+                      clearable
+                    />
+                    {ctaStyle !== 'plain' ? (
+                      <ColorField
+                        label="Label fill"
+                        value={ctaBackground}
+                        onChange={setCtaBackground}
+                        clearable
+                      />
+                    ) : null}
                   </Row>
                 </>
               ) : null}

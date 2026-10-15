@@ -94,7 +94,7 @@
     "type": "git",
     "url": "git+https://github.com/yogeshgabani/react-qr-code.git"
   },
-  "homepage": "https://yogeshgabani.github.io/react-qr-code/",
+  "homepage": "https://react-next-qrcode.netlify.app/",
   "bugs": {
     "url": "https://github.com/yogeshgabani/react-qr-code/issues"
   },

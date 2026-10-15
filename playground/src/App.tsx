@@ -88,7 +88,7 @@ const TABS: TabDef[] = [
     label: "Scanner",
     group: "Apps",
     icon: "📷",
-    description: "Live camera scanning with jsQR",
+    description: "Scan with the camera or from an image file",
     Component: ScannerTab,
   },
   {

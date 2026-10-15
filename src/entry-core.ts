@@ -10,6 +10,8 @@ export type {
   QRGradient,
   QRThemeName,
   QRAnimation,
+  LabelStyle,
+  LabelPosition,
 } from './components/QRCode/QRCode';
 export type { ModuleShape, CornerStyle, EyeShape } from './core/shapes';
 

@@ -32,19 +32,20 @@ export default function App() {
 | React component                                        |       ✅        |      ✅      |      ✅       | ❌ vanilla JS    |
 | Logo in the middle                                     |       ✅        |      ✅      |      ❌       |       ✅        |
 | Module shapes, custom eyes, gradients                  |       ✅        |      ❌      |      ❌       |       ✅        |
+| "Scan me" frame and label                              |       ✅        |      ❌      |      ❌       |       ❌        |
 | WiFi, vCard, UPI, WhatsApp, event… helpers             |       ✅        |      ❌      |      ❌       |       ❌        |
 | Built-in PNG / SVG / PDF download                      |       ✅        |      ❌      |      ❌       |   ✅ (no PDF)   |
 | Copy to clipboard, native share                        |       ✅        |      ❌      |      ❌       |       ❌        |
 | Scannability check                                     |       ✅        |      ❌      |      ❌       |       ❌        |
-| Camera scanner                                         |       ✅        |      ❌      |      ❌       |       ❌        |
+| Scanner (camera or image file)                         |       ✅        |      ❌      |      ❌       |       ❌        |
 
-**Small where it counts.** Importing `<QRCode>` adds about **8 KB gzipped** to your app. The scanner's decoder only loads when you use the scanner or `verify()`. The only runtime dependency is `jsqr`.
+**Small where it counts.** Importing `<QRCode>` adds about **9 KB gzipped** to your app. The scanner's decoder only loads when you use the scanner, `scanQRFromImage()` or `verify()`. The only runtime dependency is `jsqr`.
 
 If you only need a plain black-and-white code, `qrcode.react` is smaller. Pick this package when the QR has to match a brand, carry structured data, or be downloaded and shared.
 
 ## Contents
 
-- [Styling](#styling) · [Logo](#logo) · [Themes and animations](#themes-and-animations)
+- [Styling](#styling) · [Logo](#logo) · ["Scan me" label](#scan-me-label) · [Themes and animations](#themes-and-animations)
 - [QR types](#qr-types) (WiFi, vCard, UPI, WhatsApp, events, maps, crypto, social)
 - [Download, copy, share](#download-copy-share)
 - [Check that it scans](#check-that-it-scans)
@@ -95,6 +96,19 @@ Error correction switches to `H` automatically when you add a logo, and the logo
 ```
 
 More options (`logoMode`, `logoPosition`, `logoPadding`, borders) are in the [API reference](./FEATURES.md#logo).
+
+## "Scan me" label
+
+Add a call to action under or above the code. It's drawn inside the SVG, so it's included in every download, copy and share.
+
+```tsx
+<>
+  <QRCode value="https://example.com/menu" label="SCAN FOR MENU" />
+  <QRCode value="https://example.com" label="SCAN ME" labelStyle="pill" labelPosition="top" />
+</>
+```
+
+`labelStyle` is `banner` (a frame with a text band, the default), `pill` or `plain`. `size` stays the width and the SVG grows taller to fit the label. [Options](./FEATURES.md#label)
 
 ## Themes and animations
 
@@ -238,6 +252,15 @@ import { QRScanner } from 'react-qr-master';
 ```
 
 Uses the rear camera, ignores duplicate reads, and has a torch toggle and pause/resume through a ref. Camera access needs HTTPS or `localhost`. [Props](./FEATURES.md#qrscanner)
+
+Add `allowImageUpload` to let people pick a photo or screenshot instead. That also works when the camera is blocked or missing. `scanQRFromImage` does the same without any UI:
+
+```tsx
+async function readQR(file: File) {
+  const text = await scanQRFromImage(file); // null when the image has no QR
+  console.log(text);
+}
+```
 
 ## Batch generator
 

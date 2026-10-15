@@ -54,6 +54,8 @@ function parseChangelog(md: string): Release[] {
 }
 
 const RELEASES = parseChangelog(changelog);
+// The newest version published to npm (skips an `## Unreleased` section).
+const LATEST = RELEASES.find((r) => /^\d/.test(r.version));
 
 const SECTION_COLORS: Record<string, string> = {
   added: tokens.success,
@@ -115,6 +117,8 @@ function formatDate(date: string): string {
 }
 
 function ReleaseCard({ release, latest }: { release: Release; latest: boolean }) {
+  // `## Unreleased` holds changes that are on main but not on npm yet.
+  const released = /^\d/.test(release.version);
   return (
     <article style={{ position: 'relative', paddingLeft: 30 }}>
       {/* Timeline dot */}
@@ -146,7 +150,7 @@ function ReleaseCard({ release, latest }: { release: Release; latest: boolean })
               color: 'transparent',
             }}
           >
-            v{release.version}
+            {released ? `v${release.version}` : release.version}
           </h3>
           {latest ? (
             <span
@@ -163,14 +167,16 @@ function ReleaseCard({ release, latest }: { release: Release; latest: boolean })
           {release.date ? (
             <span style={{ color: tokens.textMuted, fontSize: 13 }}>{formatDate(release.date)}</span>
           ) : null}
-          <a
-            href={`https://www.npmjs.com/package/react-qr-master/v/${release.version}`}
-            target="_blank"
-            rel="noreferrer"
-            style={{ marginLeft: 'auto', color: tokens.textMuted, fontSize: 13, textDecoration: 'none' }}
-          >
-            npm ↗
-          </a>
+          {released ? (
+            <a
+              href={`https://www.npmjs.com/package/react-qr-master/v/${release.version}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ marginLeft: 'auto', color: tokens.textMuted, fontSize: 13, textDecoration: 'none' }}
+            >
+              npm ↗
+            </a>
+          ) : null}
         </header>
 
         {release.sections.map((section, i) => {
@@ -236,8 +242,8 @@ export function ChangelogTab() {
             background: `linear-gradient(180deg, #a855f7, ${tokens.border})`,
           }}
         />
-        {RELEASES.map((release, i) => (
-          <ReleaseCard key={release.version} release={release} latest={i === 0} />
+        {RELEASES.map((release) => (
+          <ReleaseCard key={release.version} release={release} latest={release === LATEST} />
         ))}
       </div>
     </div>

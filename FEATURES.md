@@ -28,7 +28,7 @@ Renders an `<svg>`. The ref is forwarded to that `<svg>` element.
 | Prop     | Type                       | Default | Description                                                                                      |
 | -------- | -------------------------- | ------- | ------------------------------------------------------------------------------------------------ |
 | `value`  | `string`                   | —       | **Required.** Text to encode. Any UTF-8 text works, including Hindi, emoji and other scripts.     |
-| `size`   | `number`                   | `256`   | Width and height in px.                                                                          |
+| `size`   | `number`                   | `256`   | Width and height in px. With a [`label`](#label) the SVG gets taller; `size` stays the width.     |
 | `margin` | `number`                   | `4`     | Quiet zone in modules. Keep at least 4 for reliable scanning.                                    |
 | `level`  | `'L' \| 'M' \| 'Q' \| 'H'` | `'M'`   | Error correction (~7 / 15 / 25 / 30 % recovery). Becomes `'H'` automatically when a `logo` is set. |
 
@@ -76,6 +76,32 @@ Renders an `<svg>`. The ref is forwarded to that `<svg>` element.
 
 ```tsx
 <QRCode value="https://example.com" logo="/logo.png" logoSize={0.22} logoShape="circle" />
+```
+
+### Label
+
+A call to action such as "SCAN ME", drawn inside the SVG so downloads, copies and shares include it. `size` stays the width of the SVG and the height grows to fit the label. Long text shrinks to fit the width, so keep it short.
+
+| Prop              | Type                             | Default                | Description                                                                 |
+| ----------------- | -------------------------------- | ---------------------- | --------------------------------------------------------------------------- |
+| `label`           | `string`                         | —                      | The text. No label is drawn when it's empty.                                |
+| `labelStyle`      | `'banner' \| 'pill' \| 'plain'`  | `'banner'`             | `banner` frames the QR and puts the text in a band, `pill` puts it in a rounded button, `plain` is text only. |
+| `labelPosition`   | `'bottom' \| 'top'`              | `'bottom'`             | Side of the QR the label sits on.                                           |
+| `labelColor`      | `string`                         | `bgColor` / `fgColor`  | Text colour. `bgColor` for `banner` and `pill`, `fgColor` for `plain`.      |
+| `labelBackground` | `string`                         | `fgColor`              | Frame and pill colour (the first gradient colour when `gradient` is set).   |
+| `labelFont`       | `string`                         | system sans-serif      | CSS `font-family`. Downloads can only use fonts installed on the device, not web fonts. |
+
+```tsx
+<>
+  <QRCode value="https://example.com/menu" label="SCAN FOR MENU" frame="rounded" />
+  <QRCode
+    value="https://example.com"
+    label="SCAN ME"
+    labelStyle="pill"
+    labelBackground="#4f46e5"
+    gradient={{ type: 'linear', colors: ['#4f46e5', '#db2777'] }}
+  />
+</>
 ```
 
 ### DOM
@@ -247,7 +273,7 @@ function ShareableQR() {
 
 | Action                       | Description                                                                                                                                     |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `download(format, options?)` | `format`: `'svg' \| 'png' \| 'jpg' \| 'jpeg' \| 'webp' \| 'pdf'`. Options: `filename`, `pixelSize` (default 1024), `quality` (0–1, JPG/WEBP). PDFs are lossless in modern browsers. |
+| `download(format, options?)` | `format`: `'svg' \| 'png' \| 'jpg' \| 'jpeg' \| 'webp' \| 'pdf'`. Options: `filename`, `pixelSize` (width in px, default 1024; the height follows the QR, so a labelled QR is taller), `quality` (0–1, JPG/WEBP). PDFs are lossless in modern browsers. |
 | `copy(options?)`             | Copies a PNG to the clipboard. Call it from a click handler.                                                                                    |
 | `share(options?)`            | Opens the native share sheet (mostly mobile). Resolves `false` if sharing is unsupported or the user cancels. Options: `filename`, `pixelSize`, `title`, `text`. |
 | `verify(options?)`           | Decodes the rendered QR to check it really scans. See below.                                                                                    |
@@ -305,11 +331,37 @@ function Scan() {
 | `pauseOnScan`   | `boolean`                  | `false`         | Stop after the first successful read.      |
 | `showOverlay`   | `boolean`                  | `true`          | Framing reticle and scan line.             |
 | `overlayColor`  | `string`                   | `#22d3ee`       | Reticle colour.                            |
+| `allowImageUpload` | `boolean`               | `false`         | Adds a "Scan an image" button for photos and screenshots. It also works when the camera is blocked or missing. |
 | `width`, `height` | `number \| string`       | `'100%'`, `320` | Viewport size.                             |
 
-Ref methods: `pause()`, `resume()`, `toggleTorch()` (resolves the new torch state; Android Chrome), `isTorchOn()`.
+Ref methods: `pause()`, `resume()`, `toggleTorch()` (resolves the new torch state; Android Chrome), `isTorchOn()`, and `scanImage(source)`, which reads an image and reports it through `onScan` like the upload button does. Use it for your own upload or drag-and-drop UI.
 
 Camera access needs HTTPS (or `localhost`).
+
+### scanQRFromImage
+
+Reads a QR from an image without any UI. It accepts a `File` or `Blob`, an image URL or data URI, an `<img>`, a `<canvas>` or an `ImageBitmap`. It resolves the decoded text, or `null` when the image has no readable QR. Large photos are downscaled before decoding, and light-on-dark codes are read too.
+
+```tsx
+function UploadQR() {
+  const [text, setText] = useState<string | null>(null);
+  return (
+    <>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (file) setText(await scanQRFromImage(file));
+        }}
+      />
+      <p>{text ?? 'No QR found yet'}</p>
+    </>
+  );
+}
+```
+
+An image URL on another origin can only be read if it's served with CORS headers. Otherwise, fetch it yourself and pass the `Blob`.
 
 ---
 

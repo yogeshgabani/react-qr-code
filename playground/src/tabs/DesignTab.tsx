@@ -1,4 +1,11 @@
-import { QRCode, type ModuleShape, type CornerStyle, type EyeShape, type QRAnimation } from 'react-qr-master';
+import {
+  QRCode,
+  type ModuleShape,
+  type CornerStyle,
+  type EyeShape,
+  type QRAnimation,
+  type QRCodeProps,
+} from 'react-qr-master';
 import { card, cardLabel, grid, sectionHeading, subtle, tokens } from '../styles';
 import { HowToUse, CopyButton } from '../components';
 
@@ -17,6 +24,40 @@ const MODULES: ModuleShape[] = [
 const CORNERS: CornerStyle[] = ['square', 'rounded', 'soft-rounded', 'circle', 'modern'];
 const EYES: EyeShape[] = ['square', 'rounded', 'circle', 'diamond', 'modern'];
 const ANIMATIONS: QRAnimation[] = ['pulse', 'zoom', 'bounce', 'rotate', 'fade', 'wave', 'glow', 'breathing', 'scan'];
+const LABELS: Array<{ title: string; code: string; props: Partial<QRCodeProps> }> = [
+  {
+    title: 'labelStyle="banner"',
+    code: `label="SCAN ME"`,
+    props: { label: 'SCAN ME' },
+  },
+  {
+    title: 'labelStyle="pill"',
+    code: `label="SCAN ME" labelStyle="pill" labelBackground="#4f46e5"`,
+    props: {
+      label: 'SCAN ME',
+      labelStyle: 'pill',
+      labelBackground: '#4f46e5',
+      shape: 'rounded',
+      cornerStyle: 'rounded',
+      eyeShape: 'rounded',
+    },
+  },
+  {
+    title: 'labelStyle="plain" · top',
+    code: `label="Scan for menu" labelStyle="plain" labelPosition="top"`,
+    props: { label: 'Scan for menu', labelStyle: 'plain', labelPosition: 'top', fgColor: '#0f766e' },
+  },
+  {
+    title: 'banner · rounded · gradient',
+    code: `label="SCAN TO PAY" frame="rounded" gradient={{ type: 'linear', colors: ['#7c3aed', '#db2777'], rotation: 45 }}`,
+    props: {
+      label: 'SCAN TO PAY',
+      frame: 'rounded',
+      shape: 'extra-rounded',
+      gradient: { type: 'linear', colors: ['#7c3aed', '#db2777'], rotation: 45 },
+    },
+  },
+];
 
 export function DesignTab() {
   return (
@@ -172,6 +213,25 @@ export function DesignTab() {
             />
           </div>
         </div>
+      </div>
+
+      <h2 style={{ ...sectionHeading, marginTop: 32 }}>"Scan me" labels · 3 styles</h2>
+      <p style={subtle}>
+        A call to action drawn inside the SVG, so PNG / PDF downloads include it. <code>size</code> stays
+        the width; the code grows taller to fit the label.
+      </p>
+      <div style={grid}>
+        {LABELS.map(({ title, code, props }) => (
+          <div style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }} className="qrm-card" key={title}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+              <p style={cardLabel}>{title}</p>
+              <CopyButton text={code} label="Code" size="sm" />
+            </div>
+            <div style={{ display: 'grid', placeItems: 'center', flex: 1 }}>
+              <QRCode value={SAMPLE} size={170} {...props} />
+            </div>
+          </div>
+        ))}
       </div>
 
       <h2 style={{ ...sectionHeading, marginTop: 32 }}>Animations · 9</h2>

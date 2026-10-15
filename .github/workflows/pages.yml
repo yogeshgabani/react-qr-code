@@ -1,5 +1,6 @@
-# Deploys the playground as the live demo at
-# https://yogeshgabani.github.io/react-qr-code/
+# Deploys a mirror of the playground to GitHub Pages at
+# https://yogeshgabani.github.io/react-qr-code/ (the main live demo is
+# https://react-next-qrcode.netlify.app/, see netlify.toml).
 # One-time setup: repo Settings → Pages → Source: "GitHub Actions".
 name: Deploy demo
 

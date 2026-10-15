@@ -14,7 +14,9 @@ export function ScannerTab() {
     <div>
       <p style={subtle}>
         Uses <code>navigator.mediaDevices.getUserMedia</code> + jsQR. Browser will prompt for
-        camera permission. Torch / front-back camera toggle supported on capable devices.
+        camera permission. Torch / front-back camera toggle supported on capable devices. No camera?
+        Use <strong>Scan an image</strong> to read a QR from a photo or screenshot
+        (<code>allowImageUpload</code>, or <code>scanQRFromImage(file)</code> on its own).
       </p>
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px,1fr) minmax(280px,1fr)', gap: 20 }}>
         <div>
@@ -23,6 +25,7 @@ export function ScannerTab() {
             onScan={(r) => setResults((prev) => [r, ...prev].slice(0, 30))}
             onError={(e) => setError(e.message)}
             facingMode={facing}
+            allowImageUpload
             height={360}
           />
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>

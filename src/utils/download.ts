@@ -5,7 +5,10 @@ export type RasterFormat = 'png' | 'jpg' | 'jpeg' | 'webp';
 
 export interface DownloadOptions {
   filename?: string;
-  /** Pixel size for raster outputs (PNG/JPG/WEBP/PDF). Defaults to 1024. */
+  /**
+   * Pixel width for raster outputs (PNG/JPG/WEBP/PDF). Defaults to 1024. The
+   * height follows the QR's aspect ratio (taller when it has a label).
+   */
   pixelSize?: number;
   /** 0..1 quality for JPG and WEBP. */
   quality?: number;
@@ -14,7 +17,7 @@ export interface DownloadOptions {
 export interface ShareOptions {
   /** File name of the shared image. Defaults to `qrcode.png`. */
   filename?: string;
-  /** Pixel size of the shared PNG. Defaults to 1024. */
+  /** Pixel width of the shared PNG. Defaults to 1024. */
   pixelSize?: number;
   title?: string;
   text?: string;
@@ -48,12 +51,20 @@ function serializeSvg(svg: SVGSVGElement): string {
   return new XMLSerializer().serializeToString(clone);
 }
 
-/** Rasterise an SVG element onto a square canvas of `pixelSize` px. */
+/**
+ * Rasterise an SVG element onto a canvas `pixelSize` px wide. The height
+ * follows the viewBox, so a QR with a label comes out taller than wide.
+ */
 export async function svgToCanvas(
   svg: SVGSVGElement,
   pixelSize: number,
   background?: string,
 ): Promise<HTMLCanvasElement> {
+  const viewBox = svg.viewBox?.baseVal;
+  const height =
+    viewBox && viewBox.width > 0 && viewBox.height > 0
+      ? Math.round((pixelSize * viewBox.height) / viewBox.width)
+      : pixelSize;
   const svgBlob = new Blob([serializeSvg(svg)], { type: 'image/svg+xml;charset=utf-8' });
   const url = URL.createObjectURL(svgBlob);
   try {
@@ -65,14 +76,14 @@ export async function svgToCanvas(
     });
     const canvas = document.createElement('canvas');
     canvas.width = pixelSize;
-    canvas.height = pixelSize;
+    canvas.height = height;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas 2D context unavailable');
     if (background) {
       ctx.fillStyle = background;
-      ctx.fillRect(0, 0, pixelSize, pixelSize);
+      ctx.fillRect(0, 0, pixelSize, height);
     }
-    ctx.drawImage(img, 0, 0, pixelSize, pixelSize);
+    ctx.drawImage(img, 0, 0, pixelSize, height);
     return canvas;
   } finally {
     URL.revokeObjectURL(url);
@@ -105,13 +116,14 @@ async function svgToRasterBlob(
   return canvasToBlob(await svgToCanvas(svg, pixelSize, background), format, quality);
 }
 
-/** Render an SVG QR into a single-page PDF sized to `pixelSize` CSS px. */
+/** Render an SVG QR into a single-page PDF `pixelSize` CSS px wide. */
 export async function svgToPdfBlob(svg: SVGSVGElement, pixelSize = 1024): Promise<Blob> {
-  const image = await canvasToPdfImage(await svgToCanvas(svg, pixelSize));
-  const pt = pixelSize * 0.75; // 96 CSS px per inch → 72 pt per inch
-  const pdf = buildPDF([
-    { width: pt, height: pt, images: [{ image, x: 0, y: 0, width: pt, height: pt }] },
-  ]);
+  const canvas = await svgToCanvas(svg, pixelSize);
+  const image = await canvasToPdfImage(canvas);
+  // 96 CSS px per inch → 72 pt per inch
+  const width = canvas.width * 0.75;
+  const height = canvas.height * 0.75;
+  const pdf = buildPDF([{ width, height, images: [{ image, x: 0, y: 0, width, height }] }]);
   return new Blob([pdf as BlobPart], { type: 'application/pdf' });
 }
 

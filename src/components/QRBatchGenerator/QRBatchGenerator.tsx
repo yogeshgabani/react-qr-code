@@ -129,7 +129,15 @@ export function QRBatchGenerator({
         const y = PDF_MARGIN + Math.floor(slot / PDF_COLS) * rowHeight;
 
         const canvas = await renderQRToCanvas(r.value, qrOptions, exportPixelSize);
-        page.images!.push({ image: await canvasToPdfImage(canvas), x, y, width: cell, height: cell });
+        // A QR with a label is taller than wide; fit it inside the square cell.
+        const fit = Math.min(1, canvas.width / canvas.height);
+        page.images!.push({
+          image: await canvasToPdfImage(canvas),
+          x: x + (cell - cell * fit) / 2,
+          y,
+          width: cell * fit,
+          height: cell,
+        });
 
         const label = fitHelvetica(batchLabel(r), PDF_LABEL_SIZE, cell);
         const labelX = x + (cell - measureHelvetica(label, PDF_LABEL_SIZE)) / 2;

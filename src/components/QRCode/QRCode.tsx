@@ -17,11 +17,16 @@ import {
 import { getFinderOrigins, isInFinderPattern } from '../../core/finder';
 import { getAnimationCSS, type QRAnimation } from '../../core/animations';
 import { THEMES, type QRThemeName, type QRTheme } from '../../core/themes';
+import { layoutLabel, type LabelPosition, type LabelStyle } from '../../core/label';
 import type { QRGradient } from '../../core/qr-types';
 
 export type { QRGradient } from '../../core/qr-types';
 export type { QRThemeName } from '../../core/themes';
 export type { QRAnimation } from '../../core/animations';
+export type { LabelStyle, LabelPosition } from '../../core/label';
+
+const DEFAULT_LABEL_FONT =
+  'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
 // Safe maximum logoSize (linear ratio of the QR) for each error-correction
 // level. Beyond these the logo eats more data modules than the level can
@@ -74,6 +79,29 @@ export interface QRCodeProps {
   // ── Outer frame ──────────────────────────────────────────────────────────
   /** Outer QR frame shape. 'rounded' rounds the bg corners; safe inside the quiet zone. */
   frame?: 'square' | 'rounded';
+
+  // ── Label ("SCAN ME" call to action) ─────────────────────────────────────
+  /**
+   * Short call-to-action text drawn with the QR, e.g. "SCAN ME". The SVG keeps
+   * `size` as its width and grows taller to fit the label. Long text shrinks
+   * to fit the width.
+   */
+  label?: string;
+  /**
+   * How the label is drawn:
+   *   - 'banner' (default) — coloured frame around the QR, text in a band
+   *   - 'pill' — text in a rounded button next to the QR
+   *   - 'plain' — text only
+   */
+  labelStyle?: LabelStyle;
+  /** Side of the QR the label sits on. Defaults to 'bottom'. */
+  labelPosition?: LabelPosition;
+  /** Text colour. Defaults to bgColor for 'banner' / 'pill', fgColor for 'plain'. */
+  labelColor?: string;
+  /** Frame / pill colour. Defaults to fgColor (the first colour of a gradient). */
+  labelBackground?: string;
+  /** CSS font-family of the label. Defaults to a bold system sans-serif. */
+  labelFont?: string;
 
   // ── Design engine ────────────────────────────────────────────────────────
   /** Apply a preset theme. Individual props override theme values. */
@@ -136,6 +164,10 @@ export const QRCode = /* @__PURE__ */ forwardRef<SVGSVGElement, QRCodeProps>(fun
     logoBorderColor,
     logoBorderWidth = 0.5,
     frame = 'square',
+    label,
+    labelStyle = 'banner',
+    labelPosition = 'bottom',
+    labelFont = DEFAULT_LABEL_FONT,
     theme: themeName,
     moduleSpacing = 0,
     className,
@@ -186,6 +218,23 @@ export const QRCode = /* @__PURE__ */ forwardRef<SVGSVGElement, QRCodeProps>(fun
     [value, level],
   );
   const total = count + margin * 2;
+  const frameRadius = frame === 'rounded' ? Math.min(margin, total * 0.06) : 0;
+
+  // Optional "SCAN ME" label. The QR keeps its own coordinates and is shifted
+  // into place, so nothing below needs to know about the label.
+  const labelText = label?.trim();
+  const labelLayout = labelText
+    ? layoutLabel(labelText, labelStyle, labelPosition, total, margin)
+    : null;
+  const viewWidth = labelLayout?.width ?? total;
+  const viewHeight = labelLayout?.height ?? total;
+  const labelAccent = gradient?.colors[0] ?? fgColor;
+  const labelFill = props.labelBackground ?? labelAccent;
+  const labelTextColor = props.labelColor ?? (labelStyle === 'plain' ? labelAccent : bgColor);
+  const outerRadius =
+    labelStyle === 'banner' && frame === 'rounded'
+      ? frameRadius + (labelLayout?.border ?? 0)
+      : frameRadius;
 
   // Clamp logo size to both the UI limit (0.5) and the safety limit for the EC level.
   // Safety limits ensure the QR remains scannable even on strict built-in scanners.
@@ -271,85 +320,14 @@ export const QRCode = /* @__PURE__ */ forwardRef<SVGSVGElement, QRCodeProps>(fun
           .join(', ')})`
       : '';
 
-  return (
-    <svg
-      ref={ref}
-      id={id}
-      className={className}
-      style={style}
-      width={size}
-      height={size}
-      viewBox={`0 0 ${total} ${total}`}
-      xmlns="http://www.w3.org/2000/svg"
-      role="img"
-      aria-label={title ?? `QR code for ${value}`}
-      shapeRendering="crispEdges"
-    >
-      {title ? <title>{title}</title> : null}
-      {animation ? <style>{getAnimationCSS(animation)}</style> : null}
-      {gradient && !useConic ? (
-        <defs>
-          {gradient.type === 'linear' ? (
-            <linearGradient
-              id={gradId}
-              gradientUnits="userSpaceOnUse"
-              x1={0}
-              y1={0}
-              x2={total}
-              y2={0}
-              gradientTransform={
-                gradient.rotation
-                  ? `rotate(${gradient.rotation} ${total / 2} ${total / 2})`
-                  : undefined
-              }
-            >
-              {gradient.colors.map((color, i) => (
-                <stop
-                  key={i}
-                  offset={
-                    gradient.colors.length === 1
-                      ? 1
-                      : i / (gradient.colors.length - 1)
-                  }
-                  stopColor={color}
-                />
-              ))}
-            </linearGradient>
-          ) : (
-            <radialGradient
-              id={gradId}
-              gradientUnits="userSpaceOnUse"
-              cx={total / 2}
-              cy={total / 2}
-              r={total / 2}
-            >
-              {gradient.colors.map((color, i) => (
-                <stop
-                  key={i}
-                  offset={
-                    gradient.colors.length === 1
-                      ? 1
-                      : i / (gradient.colors.length - 1)
-                  }
-                  stopColor={color}
-                />
-              ))}
-            </radialGradient>
-          )}
-        </defs>
-      ) : null}
-
-      {/* Conic gradient: SVG mask of the module shapes clips a foreignObject
-          that hosts a CSS conic-gradient div (with explicit XHTML namespace
-          so the browser actually parses + paints it). */}
-      {useConic ? <defs>{conicMaskShapes}</defs> : null}
-
+  const body = (
+    <>
       <rect
         width={total}
         height={total}
         fill={bgColor}
-        rx={frame === 'rounded' ? Math.min(margin, total * 0.06) : 0}
-        ry={frame === 'rounded' ? Math.min(margin, total * 0.06) : 0}
+        rx={frameRadius}
+        ry={frameRadius}
       />
 
       {/* Background-mode logo: image fills the whole QR canvas before modules render. */}
@@ -528,6 +506,125 @@ export const QRCode = /* @__PURE__ */ forwardRef<SVGSVGElement, QRCodeProps>(fun
             fill={fgColor}
             opacity={0.35}
           />
+        </>
+      ) : null}
+    </>
+  );
+
+  return (
+    <svg
+      ref={ref}
+      id={id}
+      className={className}
+      style={style}
+      width={size}
+      height={(size * viewHeight) / viewWidth}
+      viewBox={`0 0 ${viewWidth} ${viewHeight}`}
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label={title ?? `QR code for ${value}`}
+      shapeRendering="crispEdges"
+    >
+      {title ? <title>{title}</title> : null}
+      {animation ? <style>{getAnimationCSS(animation)}</style> : null}
+      {gradient && !useConic ? (
+        <defs>
+          {gradient.type === 'linear' ? (
+            <linearGradient
+              id={gradId}
+              gradientUnits="userSpaceOnUse"
+              x1={0}
+              y1={0}
+              x2={total}
+              y2={0}
+              gradientTransform={
+                gradient.rotation
+                  ? `rotate(${gradient.rotation} ${total / 2} ${total / 2})`
+                  : undefined
+              }
+            >
+              {gradient.colors.map((color, i) => (
+                <stop
+                  key={i}
+                  offset={
+                    gradient.colors.length === 1
+                      ? 1
+                      : i / (gradient.colors.length - 1)
+                  }
+                  stopColor={color}
+                />
+              ))}
+            </linearGradient>
+          ) : (
+            <radialGradient
+              id={gradId}
+              gradientUnits="userSpaceOnUse"
+              cx={total / 2}
+              cy={total / 2}
+              r={total / 2}
+            >
+              {gradient.colors.map((color, i) => (
+                <stop
+                  key={i}
+                  offset={
+                    gradient.colors.length === 1
+                      ? 1
+                      : i / (gradient.colors.length - 1)
+                  }
+                  stopColor={color}
+                />
+              ))}
+            </radialGradient>
+          )}
+        </defs>
+      ) : null}
+
+      {/* Conic gradient: SVG mask of the module shapes clips a foreignObject
+          that hosts a CSS conic-gradient div (with explicit XHTML namespace
+          so the browser actually parses + paints it). */}
+      {useConic ? <defs>{conicMaskShapes}</defs> : null}
+
+      {labelLayout ? (
+        <rect
+          width={viewWidth}
+          height={viewHeight}
+          fill={labelStyle === 'banner' ? labelFill : bgColor}
+          rx={outerRadius}
+          ry={outerRadius}
+        />
+      ) : null}
+
+      {labelLayout ? (
+        <g transform={`translate(${labelLayout.qrX} ${labelLayout.qrY})`}>{body}</g>
+      ) : (
+        body
+      )}
+
+      {labelLayout ? (
+        <>
+          {labelLayout.pill ? (
+            <rect
+              x={labelLayout.pill.x}
+              y={labelLayout.pill.y}
+              width={labelLayout.pill.width}
+              height={labelLayout.pill.height}
+              rx={labelLayout.pill.height / 2}
+              ry={labelLayout.pill.height / 2}
+              fill={labelFill}
+              shapeRendering="auto"
+            />
+          ) : null}
+          <text
+            x={labelLayout.textX}
+            y={labelLayout.textY}
+            fontSize={labelLayout.fontSize}
+            fontFamily={labelFont}
+            fontWeight={700}
+            textAnchor="middle"
+            fill={labelTextColor}
+          >
+            {labelText}
+          </text>
         </>
       ) : null}
     </svg>

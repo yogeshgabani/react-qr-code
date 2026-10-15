@@ -10,7 +10,7 @@ const pkg = JSON.parse(readFileSync(resolve(import.meta.dirname, '../package.jso
 
 // Absolute URL for the canonical / og: / twitter: tags in index.html, since
 // social crawlers ignore relative image URLs. Netlify sets URL during builds;
-// otherwise fall back to the GitHub Pages homepage.
+// otherwise fall back to the package.json homepage (the Netlify demo).
 const siteUrl = (process.env.SITE_URL || process.env.URL || pkg.homepage).replace(/\/?$/, '/');
 
 export default defineConfig({
