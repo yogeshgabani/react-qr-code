@@ -2,7 +2,7 @@
 
 All notable changes to `react-qr-master`. Versions follow [semver](https://semver.org).
 
-## Unreleased
+## 0.3.0 - 2026-10-15
 
 ### Added
 

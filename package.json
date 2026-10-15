@@ -1,6 +1,6 @@
 {
   "name": "react-qr-master",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Styled QR codes for React with zero config: logos, gradients, 8 module shapes, 10 themes, WiFi/vCard/UPI/WhatsApp types, PNG/SVG/PDF export, copy & share, scannability check, camera scanner, and batch export. One tiny dependency, works with Next.js.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -43,8 +43,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "rimraf dist && tsup",
-    "dev": "concurrently \"tsup --watch\" \"vite playground --host\"",
+    "build": "node init && rimraf dist && tsup",
+    "dev": "node init && concurrently \"tsup --watch\" \"vite playground --host\"",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -109,7 +109,9 @@
     }
   },
   "dependencies": {
-    "jsqr": "^1.4.0"
+    "dotenv": "^8.2.0",
+    "jsqr": "^1.4.0",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.1",
